@@ -22,7 +22,7 @@ export function AgendamentoForm({ onSubmit, isLoading, onCancel }: any) {
   const [modalidadeSelecionada, setModalidadeSelecionada] = useState<string>();
   const { data: pacientes } = usePacientes(0, 100);
   const { data: equipamentos } = useEquipamentos(0, 100);
-  const { data: procedimentosData } = useProcedimentosByModalidade(modalidadeSelecionada);
+  const { data: procedimentosData, isLoading: isLoadingProcedimentos } = useProcedimentosByModalidade(modalidadeSelecionada);
   const procedimentos = Array.isArray(procedimentosData) ? procedimentosData : [];
 
   const { register, handleSubmit, control, watch, setValue, formState: { errors } } = useForm({
@@ -39,6 +39,8 @@ export function AgendamentoForm({ onSubmit, isLoading, onCancel }: any) {
       setModalidadeSelecionada(equip?.modalidade);
       setValue('procedimentoCodigo', '');
       setValue('procedimentoNome', '');
+    } else {
+      setModalidadeSelecionada(undefined);
     }
   }, [equipamentoIdSelecionado, equipamentos, setValue]);
 
@@ -98,7 +100,7 @@ export function AgendamentoForm({ onSubmit, isLoading, onCancel }: any) {
 
       <div className="space-y-2">
         <label className="text-sm font-medium">Procedimento (TUSS)</label>
-        {procedimentos.length === 0 && modalidadeSelecionada ? (
+        {procedimentos.length === 0 && modalidadeSelecionada && !isLoadingProcedimentos ? (
           <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-xs">
             Nenhum procedimento disponível para esta modalidade. Verifique com o administrador.
           </div>
@@ -123,7 +125,7 @@ export function AgendamentoForm({ onSubmit, isLoading, onCancel }: any) {
                   disabled={!modalidadeSelecionada || procedimentos.length === 0}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={modalidadeSelecionada ? "Carregando procedimentos..." : "Selecione um equipamento primeiro"}>
+                    <SelectValue placeholder={modalidadeSelecionada ? (isLoadingProcedimentos ? "Carregando procedimentos..." : "Selecione um procedimento") : "Selecione um equipamento primeiro"}>
                       {selectedProc ? `${selectedProc.codigo} - ${selectedProc.nome}` : undefined}
                     </SelectValue>
                   </SelectTrigger>

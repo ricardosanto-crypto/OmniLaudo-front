@@ -7,6 +7,7 @@ import { EquipamentoForm } from './EquipamentoForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../../components/ui/dialog';
 import { RoleGuard } from '../../components/auth/RoleGuard';
 import { Button } from '../../components/ui/button';
+import { PageWrapper } from '../../components/layout/PageWrapper';
 
 export function Equipamentos() {
   const [page, setPage] = useState(0);
@@ -64,58 +65,60 @@ export function Equipamentos() {
   if (isError) return <div className="p-8 text-red-500">Erro: {error?.message}</div>;
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Cpu className="text-primary-500" /> 
-            Equipamentos
-          </h1>
-          <p className="text-sm text-gray-500">Gerencie o inventário de modalidades e máquinas DICOM.</p>
-        </div>
+    <PageWrapper
+      title="Equipamentos"
+      description="Gerencie o inventário de modalidades e máquinas DICOM com rastreabilidade completa."
+      breadcrumbs={[
+        { label: 'Dashboard', to: '/' },
+        { label: 'Equipamentos', to: '/equipamentos' },
+      ]}
+      backLink={{ label: 'Voltar ao Dashboard', to: '/' }}
+      actions={
         <RoleGuard allowedRoles={['SUPERADMIN', 'ADMIN']}>
-          <Button 
-            onClick={() => { setEquipEmEdicao(null); setIsModalOpen(true); }} 
+          <Button
+            onClick={() => { setEquipEmEdicao(null); setIsModalOpen(true); }}
             className="bg-primary-500 hover:bg-primary-600 text-white"
           >
             <Plus size={18} className="mr-2" /> Novo Equipamento
           </Button>
         </RoleGuard>
+      }
+    >
+      <div className="space-y-8">
+        <DataTable
+          columns={columns}
+          data={pageEquip?.content || []}
+          isLoading={isLoading}
+          emptyMessage="Nenhum equipamento encontrado."
+          pageInfo={pageEquip ? { number: pageEquip.number, totalPages: pageEquip.totalPages, totalElements: pageEquip.totalElements } : undefined}
+          onPageChange={setPage}
+        />
+
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>{equipEmEdicao ? 'Editar Máquina' : 'Cadastrar Equipamento'}</DialogTitle>
+              <DialogDescription>
+                {equipEmEdicao
+                  ? 'Atualize as configurações técnicas do equipamento selecionado.'
+                  : 'Preencha os dados técnicos para registrar um novo equipamento DICOM.'}
+              </DialogDescription>
+            </DialogHeader>
+            <EquipamentoForm
+              initialData={equipEmEdicao}
+              isLoading={isCreating || isUpdating}
+              onCancel={() => setIsModalOpen(false)}
+              onSubmit={(data: any) => {
+                if (equipEmEdicao) {
+                  atualizar({ id: equipEmEdicao.id, data }, { onSuccess: () => setIsModalOpen(false) });
+                } else {
+                  criar(data, { onSuccess: () => setIsModalOpen(false) });
+                }
+              }}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
-
-      <DataTable 
-        columns={columns} 
-        data={pageEquip?.content || []} 
-        isLoading={isLoading}
-        emptyMessage="Nenhum equipamento encontrado."
-        pageInfo={pageEquip ? { number: pageEquip.number, totalPages: pageEquip.totalPages, totalElements: pageEquip.totalElements } : undefined}
-        onPageChange={setPage}
-      />
-
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>{equipEmEdicao ? 'Editar Máquina' : 'Cadastrar Equipamento'}</DialogTitle>
-            <DialogDescription>
-              {equipEmEdicao 
-                ? 'Atualize as configurações técnicas do equipamento selecionado.' 
-                : 'Preencha os dados técnicos para registrar um novo equipamento DICOM.'}
-            </DialogDescription>
-          </DialogHeader>
-          <EquipamentoForm 
-            initialData={equipEmEdicao} 
-            isLoading={isCreating || isUpdating} 
-            onCancel={() => setIsModalOpen(false)}
-            onSubmit={(data: any) => {
-              if (equipEmEdicao) {
-                atualizar({ id: equipEmEdicao.id, data }, { onSuccess: () => setIsModalOpen(false) });
-              } else {
-                criar(data, { onSuccess: () => setIsModalOpen(false) });
-              }
-            }}
-          />
-        </DialogContent>
-      </Dialog>
-    </div>
+    </PageWrapper>
   );
 }

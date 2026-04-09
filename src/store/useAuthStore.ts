@@ -24,7 +24,7 @@ export const useAuthStore = create<AuthState>()(
 
             logout: () => {
                 set({ token: null, user: null, isAuthenticated: false });
-                // Opcional: limpar outros caches, como o do TanStack Query, 
+                // Opcional: limpar outros caches, como o do TanStack Query,
                 // mas faremos isso em nível de componente/rota.
             },
 
@@ -35,8 +35,12 @@ export const useAuthStore = create<AuthState>()(
         }),
         {
             name: '@omnilaudo/auth', // Chave no localStorage
-            // Apenas persista token e user. 'isAuthenticated' é derivado, mas o Zustand 
-            // gerencia bem isso na reidratação.
+            partialize: (state) => ({ token: state.token, user: state.user }),
+            onRehydrateStorage: () => (state) => {
+                if (state?.token && state.user) {
+                    set({ isAuthenticated: true });
+                }
+            },
         }
     )
 );

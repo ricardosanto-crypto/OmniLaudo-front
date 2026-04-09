@@ -1,53 +1,173 @@
-# 🛰️ OmniLaudo RIS/PACS - Frontend
+# 🏥 OmniLaudo AI - Sistema Inteligente de Diagnóstico por Imagem
 
-**OmniLaudo** é uma plataforma de ponta para gestão de Clínicas de Radiologia e Centros de Diagnóstico por Imagem. O sistema integra agendamento, recepção, worklist técnica e um ambiente de diagnóstico completo para médicos radiologistas.
+**OmniLaudo AI** é uma plataforma revolucionária para clínicas de radiologia e centros de diagnóstico por imagem. Combinando tecnologia de ponta com uma interface intuitiva, o sistema oferece uma experiência completa para gestão administrativa, execução técnica e diagnóstico médico.
 
-## ✨ Principais Funcionalidades
+## 🌟 Destaques do Sistema
 
-### 🏛️ Gestão Administrativa
-*   **Gestão de Unidades**: Configure múltiplas clínicas, filiais e centros de custo.
-*   **Controle de Salas**: Gerencie a ocupação física e disponibilidade de equipamentos.
-*   **Inventário DICOM**: Cadastro de modalidades (RM, TC, RX, US) com configurações de AE Title e portas de comunicação.
+### 📊 Dashboard Executivo
+- **Métricas em Tempo Real**: Visualização instantânea de pacientes, agendamentos e produtividade
+- **Análises Gráficas**: Tendências mensais e distribuição por modalidade
+- **Interface Moderna**: Design responsivo com animações suaves e gradientes médicos
 
-### 📅 Fluxo de Agendamento e Recepção
-*   **Agenda Inteligente**: Visualização de horários, procedimentos TUSS e status em tempo real.
-*   **Cadastro Cinclínico**: Registro completo de pacientes com integração de convênios.
+### 🔐 Autenticação Segura
+- **Login Profissional**: Interface elegante com elementos médicos
+- **Controle de Acesso**: Sistema de roles (SuperAdmin, Admin, Médico, Tecnólogo)
+- **Conformidade**: Implementação de melhores práticas de segurança
 
-### 🛠️ Worklist do Tecnólogo (Técnico)
-*   **Painel de Execução**: Monitoramento da fila de pacientes em tempo real.
-*   **Controle de Status**: Fluxo de trabalho automatizado (Check-in -> Iniciar -> Finalizar).
-*   **Integração DICOM**: Sincronização de Accession Number para modalidades de imagem.
+### 🏛️ Gestão Administrativa Completa
+- **Multi-Unidade**: Suporte a filiais e matrizes
+- **Controle de Salas**: Gerenciamento de ocupação e equipamentos
+- **Inventário DICOM**: Configuração completa de modalidades e comunicação
 
-### 🩺 Workspace do Médico (Laudário)
-*   **Ambiente Híbrido**: Interface otimizada com DICOM Viewer integrado e Editor de Texto Rico.
-*   **Templates Inteligentes**: Aplicação rápida de modelos de laudo baseados no código TUSS.
-*   **Assinatura Digital**: Finalização de exames com status de sigilo e integridade.
+### 📅 Fluxo Integrado de Atendimento
+- **Agendamento Inteligente**: Sistema completo com códigos TUSS
+- **Recepção Otimizada**: Check-in rápido e gestão de filas
+- **Prontuário Eletrônico**: Histórico completo do paciente
 
-## 🚀 Tecnologias Utilizadas
+### 🛠️ Worklist Técnica Avançada
+- **Painel de Controle**: Monitoramento em tempo real da fila de exames
+- **Fluxo Automatizado**: Controle de status com integração DICOM
+- **Upload Seguro**: Envio de imagens para PACS Orthanc
 
-Este projeto foi construído utilizando o estado da arte do desenvolvimento web moderno:
+### 🩺 Workspace Médico Premium
+- **Visualizador DICOM**: Interface híbrida com viewer integrado
+- **Editor Inteligente**: Templates automáticos e editor rico
+- **Assinatura Digital**: Finalização com integridade e sigilo
 
-*   **⚡ Vite + React (TypeScript)**: Core da aplicação com performance superior.
-*   **🎨 CSS & Tailwind**: Estilização flexível e moderna.
-*   **🧩 Shadcn UI**: Componentes de interface baseados em Radix & Base UI.
-*   **🔄 TanStack Query (React Query)**: Gerenciamento de estado de servidor e cache inteligente.
-*   **📡 Axios**: Consumo de API REST com tratamento global de erros.
-*   **✨ Framer Motion**: Animações fluidas entre páginas.
-*   **✍️ TipTap**: Editor de texto rico de alto nível para laudários.
+## 🚀 Arquitetura Técnica
 
-## 🛠️ Instalação e Execução
+### Frontend
+- **⚡ Vite + React 18**: Performance excepcional e hot reload
+- **🔷 TypeScript**: Tipagem estática para maior confiabilidade
+- **🎨 Tailwind CSS**: Estilização utility-first moderna
+- **🧩 Shadcn/UI**: Componentes acessíveis e customizáveis
+- **📊 Recharts**: Gráficos interativos e responsivos
+- **🎭 Framer Motion**: Animações fluidas e micro-interações
+- **📝 TipTap**: Editor de texto rico profissional
+
+### Backend Integration
+- **🔄 TanStack Query**: Cache inteligente e sincronização de estado
+- **📡 Axios**: Cliente HTTP com interceptors globais
+- **🛡️ Error Handling**: Tratamento centralizado de erros
+- **🔐 JWT Authentication**: Autenticação stateless segura
+
+### Infraestrutura
+- **🏥 PACS Orthanc**: Armazenamento e distribuição de imagens DICOM
+- **📋 HL7/DICOM**: Padrões médicos para interoperabilidade
+- **☁️ Cloud Ready**: Preparado para deploy em nuvem
+
+## 🛠️ Instalação e Configuração
 
 ### Pré-requisitos
-*   Node.js (v18+)
-*   API Rest OmniLaudo (Backend Java/Spring Boot)
+- Node.js 18+
+- Backend OmniLaudo API
+- PACS Orthanc (opcional para desenvolvimento)
 
-### Passo a Passo
+### Setup Rápido
 
-1. **Clonar o repositório**
-   ```bash
-   git clone https://github.com/seu-usuario/OmniLaudo-front.git
-   cd OmniLaudo-front
-   ```
+```bash
+# Clone o repositório
+git clone https://github.com/seu-usuario/omniluado-front.git
+cd omniluado-front
+
+# Instale as dependências
+npm install
+
+# Configure as variáveis de ambiente
+cp .env.example .env
+# Edite .env com suas configurações
+
+# Execute em modo desenvolvimento
+npm run dev
+```
+
+### Build para Produção
+
+```bash
+# Build otimizado
+npm run build
+
+# Preview do build
+npm run preview
+```
+
+## 📋 Funcionalidades por Perfil
+
+### 👨‍💼 Super Admin / Admin
+- ✅ Gestão completa de unidades e salas
+- ✅ Configuração de equipamentos DICOM
+- ✅ Relatórios administrativos
+- ✅ Gerenciamento de usuários
+
+### 👨‍⚕️ Médico Radiologista
+- ✅ Acesso ao workspace de diagnóstico
+- ✅ Visualização de imagens DICOM
+- ✅ Editor de laudos com templates
+- ✅ Assinatura digital de exames
+
+### 🧑‍🔬 Tecnólogo
+- ✅ Worklist técnica em tempo real
+- ✅ Controle de fluxo de exames
+- ✅ Upload de imagens DICOM
+- ✅ Comunicação com equipamentos
+
+### 👩‍💼 Recepção
+- ✅ Agendamento de exames
+- ✅ Cadastro de pacientes
+- ✅ Gestão de convênios
+- ✅ Controle de filas
+
+## 🔧 Configuração Avançada
+
+### Variáveis de Ambiente
+```env
+VITE_API_BASE_URL=http://localhost:8080/api
+VITE_ORTHANC_URL=http://localhost:8042
+VITE_APP_NAME=OmniLaudo AI
+```
+
+### Personalização de Tema
+O sistema utiliza CSS custom properties para fácil personalização:
+```css
+:root {
+  --primary-500: #3B82F6;
+  --accent-500: #10B981;
+  /* ... outras variáveis */
+}
+```
+
+## 📈 Performance e Escalabilidade
+
+- **🚀 Lazy Loading**: Componentes carregados sob demanda
+- **💾 Intelligent Caching**: TanStack Query para otimização de requests
+- **📱 Responsive Design**: Interface adaptável a todos os dispositivos
+- **♿ Acessibilidade**: Conformidade com WCAG 2.1
+- **🔄 Real-time Updates**: WebSockets para notificações instantâneas
+
+## 🤝 Contribuição
+
+Contribuições são bem-vindas! Siga estes passos:
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para detalhes.
+
+## 📞 Suporte
+
+Para suporte técnico ou dúvidas:
+- 📧 Email: suporte@omniluado.com.br
+- 📱 WhatsApp: (11) 99999-9999
+- 📋 Documentação: [docs.omniluado.com.br](https://docs.omniluado.com.br)
+
+---
+
+**OmniLaudo AI** - Transformando o diagnóstico por imagem com inteligência artificial e excelência médica.
 
 2. **Instalar dependências**
    ```bash

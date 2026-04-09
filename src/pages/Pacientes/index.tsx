@@ -41,38 +41,48 @@ export function Pacientes() {
   if (isError) return <div className="p-8 text-red-500">Erro: {error?.message}</div>;
 
   return (
-    <PageWrapper>
-      <div className="p-8 max-w-7xl mx-auto space-y-8">
+    <PageWrapper
+      title="Pacientes"
+      description="Gerencie prontuários, histórico e dados pessoais com segurança e agilidade."
+      breadcrumbs={[
+        { label: 'Dashboard', to: '/' },
+        { label: 'Pacientes', to: '/pacientes' },
+      ]}
+      backLink={{ label: 'Voltar ao Dashboard', to: '/' }}
+      actions={
+        <Button
+          onClick={() => setIsModalOpen(true)}
+          className="bg-primary-500 hover:bg-primary-600 text-white"
+        >
+          <Plus size={18} className="mr-2" />
+          Novo Paciente
+        </Button>
+      }
+    >
+      <div className="space-y-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div className="space-y-4 w-full md:w-auto">
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Users className="text-primary-500" /> 
-              Pacientes
-            </h1>
+            <div className="flex items-center gap-2 text-slate-600">
+              <Users className="text-primary-500" />
+              <span className="text-sm font-medium uppercase tracking-[0.18em]">Pacientes</span>
+            </div>
             <div className="relative w-full md:w-80">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-              <Input 
-                placeholder="Buscar por nome ou sobrenome..." 
-                className="pl-9" 
+              <Input
+                placeholder="Buscar por nome ou sobrenome..."
+                className="pl-9"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
           </div>
-          <Button 
-            onClick={() => setIsModalOpen(true)} 
-            className="bg-primary-500 hover:bg-primary-600 text-white w-full md:w-auto"
-          >
-            <Plus size={18} className="mr-2" /> 
-            Novo Paciente
-          </Button>
         </div>
 
-        <DataTable 
-          columns={columns} 
-          data={pagePacientes?.content || []} 
+        <DataTable
+          columns={columns}
+          data={pagePacientes?.content || []}
           isLoading={isLoading}
-          emptyMessage={search ? "Nenhum paciente encontrado para esta busca." : "Nenhum paciente cadastrado."}
+          emptyMessage={search ? 'Nenhum paciente encontrado para esta busca.' : 'Nenhum paciente cadastrado.'}
           pageInfo={pagePacientes ? { number: pagePacientes.number, totalPages: pagePacientes.totalPages, totalElements: pagePacientes.totalElements } : undefined}
           onPageChange={setPage}
         />
@@ -85,8 +95,8 @@ export function Pacientes() {
                 Preencha os dados básicos do paciente. Campos como Convênio e E-mail são opcionais.
               </DialogDescription>
             </DialogHeader>
-            <PacienteForm 
-              isLoading={isCreating} 
+            <PacienteForm
+              isLoading={isCreating}
               onCancel={() => setIsModalOpen(false)}
               onSubmit={(data: any) => criar(data, { onSuccess: () => setIsModalOpen(false) })}
             />

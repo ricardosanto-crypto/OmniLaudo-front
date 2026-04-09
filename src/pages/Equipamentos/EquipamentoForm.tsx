@@ -76,8 +76,12 @@ export function EquipamentoForm({ initialData, onSubmit, isLoading, onCancel }: 
             control={control}
             name="modalidade"
             render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value}>
-                <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+              <Select onValueChange={field.onChange} value={field.value || ''}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione">
+                    {field.value ? field.value : undefined}
+                  </SelectValue>
+                </SelectTrigger>
                 <SelectContent>
                   {MODALIDADES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                 </SelectContent>

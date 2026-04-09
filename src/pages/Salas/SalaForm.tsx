@@ -56,18 +56,24 @@ export function SalaForm({ initialData, onSubmit, isLoading, onCancel }: SalaFor
         <Controller
           control={control}
           name="unidadeId"
-          render={({ field }) => (
-            <Select onValueChange={field.onChange} value={field.value || ''}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione a unidade" />
-              </SelectTrigger>
-              <SelectContent>
-                {unidadesPage?.content.map((un) => (
-                  <SelectItem key={un.id} value={un.id}>{un.nome}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+          render={({ field }) => {
+            const selectedUnidade = unidadesPage?.content.find((un) => un.id === field.value);
+
+            return (
+              <Select onValueChange={field.onChange} value={field.value || ''}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a unidade">
+                    {selectedUnidade ? selectedUnidade.nome : undefined}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {unidadesPage?.content.map((un) => (
+                    <SelectItem key={un.id} value={un.id}>{un.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            );
+          }}
         />
         {errors.unidadeId && <p className="text-red-500 text-xs">{String(errors.unidadeId.message)}</p>}
       </div>

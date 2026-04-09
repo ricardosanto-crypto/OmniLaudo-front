@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { DoorOpen, Plus, Trash2, Edit } from 'lucide-react';
 import { useSalas, useInativarSala, useCreateSala, useUpdateSala } from '../../hooks/useSalas';
+import { useUnidades } from '../../hooks/useUnidades';
 import { RoleGuard } from '../../components/auth/RoleGuard';
 import { DataTable, ColumnDef } from '../../components/ui/data-table';
 import { PageWrapper } from '../../components/layout/PageWrapper';
 import { SalaResponse, SalaRequest } from '../../types/sala';
-
+import { Button } from '../../components/ui/button';
 import { SalaForm } from './SalaForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../../components/ui/dialog';
 
@@ -17,6 +18,7 @@ export function Salas() {
   const [salaEmEdicao, setSalaEmEdicao] = useState<SalaResponse | null>(null);
 
   const { data: pageSalas, isLoading, isError, error } = useSalas(page, size);
+  const { data: unidadesPage } = useUnidades(0, 100);
   const { mutate: inativar, isPending: isDeleting } = useInativarSala();
   const { mutate: criarSala, isPending: isCreating } = useCreateSala();
   const { mutate: atualizarSala, isPending: isUpdating } = useUpdateSala();
@@ -37,6 +39,14 @@ export function Salas() {
     setIsModalOpen(true);
   };
 
+  const unidadeMap = useMemo(() => {
+    const map = new Map<string, string>();
+    unidadesPage?.content.forEach((unidade) => {
+      map.set(unidade.id, unidade.nome);
+    });
+    return map;
+  }, [unidadesPage]);
+
   const handleSubmit = (data: SalaRequest) => {
     if (salaEmEdicao) {
       atualizarSala(
@@ -50,7 +60,10 @@ export function Salas() {
 
   const columns: ColumnDef<SalaResponse>[] = [
     { header: 'Nome da Sala', accessorKey: 'nome', className: 'font-medium text-gray-900' },
-    { header: 'Unidade', accessorKey: 'unidadeNome' },
+    {
+      header: 'Unidade',
+      cell: (item) => unidadeMap.get(item.unidadeId) || item.unidadeNome || item.unidadeId,
+    },
     {
       header: 'Status',
       cell: (item) => (
@@ -93,27 +106,26 @@ export function Salas() {
   if (isError) return <div className="p-8 text-red-500">Erro: {error?.message}</div>;
 
   return (
-    <PageWrapper>
-      <div className="p-8 max-w-7xl mx-auto space-y-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <DoorOpen className="text-primary-500" />
-              Gestão de Salas
-            </h1>
-            <p className="text-sm text-gray-500">Administre as salas de exames de cada unidade.</p>
-          </div>
-
-          <RoleGuard allowedRoles={['SUPERADMIN', 'ADMIN']}>
-            <button 
-              onClick={handleNovaSala} 
-              className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md font-medium flex items-center gap-2 transition-colors"
-            >
-              <Plus size={18} /> Nova Sala
-            </button>
-          </RoleGuard>
-        </div>
-
+    <PageWrapper
+      title="Gestão de Salas"
+      description="Administre as salas de exames de cada unidade com controle total."
+      breadcrumbs={[
+        { label: 'Dashboard', to: '/' },
+        { label: 'Salas', to: '/salas' },
+      ]}
+      backLink={{ label: 'Voltar ao Dashboard', to: '/' }}
+      actions={
+        <RoleGuard allowedRoles={['SUPERADMIN', 'ADMIN']}>
+          <Button
+            onClick={handleNovaSala}
+            className="bg-primary-500 hover:bg-primary-600 text-white"
+          >
+            <Plus size={18} className="mr-2" /> Nova Sala
+          </Button>
+        </RoleGuard>
+      }
+    >
+      <div className="space-y-8">
         <DataTable
           columns={columns}
           data={pageSalas?.content || []}
@@ -128,16 +140,16 @@ export function Salas() {
             <DialogHeader>
               <DialogTitle>{salaEmEdicao ? 'Editar Sala' : 'Cadastrar Nova Sala'}</DialogTitle>
               <DialogDescription>
-                {salaEmEdicao 
-                  ? 'Atualize os dados da sala selecionada.' 
+                {salaEmEdicao
+                  ? 'Atualize os dados da sala selecionada.'
                   : 'Preencha os dados abaixo para cadastrar uma nova sala.'}
               </DialogDescription>
             </DialogHeader>
-            <SalaForm 
-              initialData={salaEmEdicao} 
-              onSubmit={handleSubmit} 
-              isLoading={isCreating || isUpdating} 
-              onCancel={() => setIsModalOpen(false)} 
+            <SalaForm
+              initialData={salaEmEdicao}
+              onSubmit={handleSubmit}
+              isLoading={isCreating || isUpdating}
+              onCancel={() => setIsModalOpen(false)}
             />
           </DialogContent>
         </Dialog>

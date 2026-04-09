@@ -7,11 +7,14 @@ import { api } from '../../services/api';
 import { useAuthStore } from '../../store/useAuthStore';
 import { ApiResponse } from '../../types/api';
 import { TokenResponse, AuthUser } from '../../types/auth';
+import { toast } from 'sonner';
 
 // Componentes do Shadcn
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { Stethoscope, Shield, Activity } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const loginSchema = z.object({
   email: z.string().email('Formato de e-mail inválido').nonempty('O e-mail é obrigatório'),
@@ -46,69 +49,115 @@ export function Login() {
   const mutation = useMutation<ApiResponse<TokenResponse>, ApiResponse<null>, LoginFormInputs>({
     mutationFn: (data) => api.post('/auth/login', data).then((res) => res.data),
     onSuccess: (response) => {
-      const token = response.data?.token;
-      if (token) {
-        const decoded = parseJwt(token);
-        
-        const user: AuthUser = {
-          id: (decoded as any)?.sub || '',
-          nome: (decoded as any)?.nome || 'Usuário',
-          email: (decoded as any)?.sub || '',
-          roles: (decoded as any)?.roles || [],
-          // Correção: Lendo o array de unidades do JWT (se seu backend enviar no futuro)
-          // Se o backend ainda não injeta 'unidadesIds' no JWT, ele inicia vazio de forma segura
-          unidadesIds: (decoded as any)?.unidadesIds || [], 
-        };
-        
-        loginFn(token, user);
-        navigate(from, { replace: true });
+      const payload = response.data ?? response;
+      const token = payload?.token;
+
+      if (!token) {
+        toast.error('Não foi possível autenticar. Verifique suas credenciais e tente novamente.');
+        return;
       }
+
+      const decoded = parseJwt(token);
+      const user: AuthUser = {
+        id: (decoded as any)?.sub || '',
+        nome: (decoded as any)?.nome || 'Usuário',
+        email: (decoded as any)?.sub || '',
+        roles: (decoded as any)?.roles || [],
+        unidadesIds: (decoded as any)?.unidadesIds || [],
+      };
+
+      loginFn(token, user);
+      navigate(from, { replace: true });
     },
     // NOTA: Não precisamos mais de 'onError' aqui! 
     // O MutationCache global no queryClient.ts intercepta e exibe o Toast.
   });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-md shadow-lg">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-primary-600">OmniLaudo AI</CardTitle>
-          <CardDescription>Insira suas credenciais para acessar o sistema</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-4">
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">E-mail</label>
-              <Input
-                type="email"
-                placeholder="exemplo@omnilaudo.com.br"
-                {...register('email')}
-                className={errors.email ? 'border-red-500 focus-visible:ring-red-500' : ''}
-              />
-              {errors.email && <span className="text-red-500 text-xs">{errors.email.message}</span>}
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Senha</label>
-              <Input
-                type="password"
-                placeholder="••••••••"
-                {...register('senha')}
-                className={errors.senha ? 'border-red-500 focus-visible:ring-red-500' : ''}
-              />
-              {errors.senha && <span className="text-red-500 text-xs">{errors.senha.message}</span>}
-            </div>
-
-            <Button 
-              type="submit" 
-              className="w-full bg-primary-500 hover:bg-primary-600" 
-              disabled={mutation.isPending}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-4">
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-100 rounded-full opacity-20"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-100 rounded-full opacity-20"></div>
+      </div>
+      
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md z-10"
+      >
+        <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
+          <CardHeader className="text-center pb-2">
+            <motion.div 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              className="mx-auto mb-4 bg-gradient-to-r from-blue-600 to-indigo-600 p-4 rounded-full w-fit"
             >
-              {mutation.isPending ? 'Autenticando...' : 'Entrar'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+              <Stethoscope className="h-8 w-8 text-white" />
+            </motion.div>
+            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              OmniLaudo AI
+            </CardTitle>
+            <CardDescription className="text-gray-600 mt-2">
+              Sistema Inteligente de Diagnóstico por Imagem
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent className="pt-6">
+            <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700 flex items-center">
+                  <Shield className="h-4 w-4 mr-2 text-blue-600" />
+                  E-mail Institucional
+                </label>
+                <Input
+                  type="email"
+                  placeholder="medico@clinica.com.br"
+                  {...register('email')}
+                  className={`h-12 text-base ${errors.email ? 'border-red-500 focus-visible:ring-red-500' : 'border-gray-300 focus-visible:ring-blue-500'}`}
+                />
+                {errors.email && <span className="text-red-500 text-xs">{errors.email.message}</span>}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700 flex items-center">
+                  <Activity className="h-4 w-4 mr-2 text-blue-600" />
+                  Senha
+                </label>
+                <Input
+                  type="password"
+                  placeholder="••••••••"
+                  {...register('senha')}
+                  className={`h-12 text-base ${errors.senha ? 'border-red-500 focus-visible:ring-red-500' : 'border-gray-300 focus-visible:ring-blue-500'}`}
+                />
+                {errors.senha && <span className="text-red-500 text-xs">{errors.senha.message}</span>}
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-200" 
+                disabled={mutation.isPending}
+              >
+                {mutation.isPending ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Autenticando...
+                  </div>
+                ) : (
+                  'Acessar Sistema'
+                )}
+              </Button>
+            </form>
+            
+            <div className="mt-6 text-center">
+              <p className="text-xs text-gray-500">
+                Sistema seguro • Dados protegidos • Conformidade HIPAA
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }

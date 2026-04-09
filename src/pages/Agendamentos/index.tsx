@@ -50,24 +50,24 @@ export function Agendamentos() {
   if (isError) return <div className="p-8 text-red-500">Erro: {error?.message}</div>;
 
   return (
-    <PageWrapper>
-      <div className="p-8 max-w-7xl mx-auto space-y-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <CalendarDays className="text-primary-500" /> 
-              Agenda do Dia
-            </h1>
-            <p className="text-sm text-gray-500">Gestão de horários e fila de execução clínica.</p>
-          </div>
-          <Button onClick={() => setIsModalOpen(true)} className="bg-primary-500 hover:bg-primary-600 text-white">
-            <Plus size={18} className="mr-2" /> Novo Agendamento
-          </Button>
-        </div>
-
-        <DataTable 
-          columns={columns} 
-          data={pageAgend?.content || []} 
+    <PageWrapper
+      title="Agenda do Dia"
+      description="Gestão de horários e fila de execução clínica com sincronização DICOM."
+      breadcrumbs={[
+        { label: 'Dashboard', to: '/' },
+        { label: 'Agendamentos', to: '/agendamentos' },
+      ]}
+      backLink={{ label: 'Voltar ao Dashboard', to: '/' }}
+      actions={
+        <Button onClick={() => setIsModalOpen(true)} className="bg-primary-500 hover:bg-primary-600 text-white">
+          <Plus size={18} className="mr-2" /> Novo Agendamento
+        </Button>
+      }
+    >
+      <div className="space-y-8">
+        <DataTable
+          columns={columns}
+          data={pageAgend?.content || []}
           isLoading={isLoading}
           emptyMessage={
             <div className="flex flex-col items-center justify-center py-12 opacity-30">
@@ -88,8 +88,8 @@ export function Agendamentos() {
                 Selecione o paciente, o equipamento e o procedimento. O sistema verificará a disponibilidade automaticamente.
               </DialogDescription>
             </DialogHeader>
-            <AgendamentoForm 
-              isLoading={isCreating} 
+            <AgendamentoForm
+              isLoading={isCreating}
               onCancel={() => setIsModalOpen(false)}
               onSubmit={(data: any) => criar(data, { onSuccess: () => setIsModalOpen(false) })}
             />

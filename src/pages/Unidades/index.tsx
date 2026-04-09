@@ -83,26 +83,29 @@ export function Unidades() {
   if (isError) return <div className="p-8 text-red-500">Erro ao carregar: {error?.message}</div>;
 
   return (
-    <PageWrapper>
-      <div className="p-8 max-w-7xl mx-auto space-y-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Building2 className="text-primary-500" /> 
-              Unidades
-            </h1>
-            <p className="text-sm text-gray-500">Configure as filiais, clínicas e unidades de atendimento.</p>
-          </div>
-          <RoleGuard allowedRoles={['SUPERADMIN', 'ADMIN']}>
-            <Button onClick={() => { setUnidadeEmEdicao(null); setIsModalOpen(true); }} className="bg-primary-500 hover:bg-primary-600 text-white">
-              <Plus size={18} className="mr-2" /> Nova Unidade
-            </Button>
-          </RoleGuard>
-        </div>
-
-        <DataTable 
-          columns={columns} 
-          data={pageUnidades?.content || []} 
+    <PageWrapper
+      title="Unidades"
+      description="Configure as filiais, clínicas e unidades de atendimento com segurança."
+      breadcrumbs={[
+        { label: 'Dashboard', to: '/' },
+        { label: 'Unidades', to: '/unidades' },
+      ]}
+      backLink={{ label: 'Voltar ao Dashboard', to: '/' }}
+      actions={
+        <RoleGuard allowedRoles={['SUPERADMIN', 'ADMIN']}>
+          <Button
+            onClick={() => { setUnidadeEmEdicao(null); setIsModalOpen(true); }}
+            className="bg-primary-500 hover:bg-primary-600 text-white"
+          >
+            <Plus size={18} className="mr-2" /> Nova Unidade
+          </Button>
+        </RoleGuard>
+      }
+    >
+      <div className="space-y-8">
+        <DataTable
+          columns={columns}
+          data={pageUnidades?.content || []}
           isLoading={isLoading}
           pageInfo={pageUnidades ? { number: pageUnidades.number, totalPages: pageUnidades.totalPages, totalElements: pageUnidades.totalElements } : undefined}
           onPageChange={setPage}
@@ -116,9 +119,9 @@ export function Unidades() {
                 Certifique-se de que o CNPJ seja válido para emissão de notas fiscais.
               </DialogDescription>
             </DialogHeader>
-            <UnidadeForm 
-              initialData={unidadeEmEdicao} 
-              isLoading={isCreating || isUpdating} 
+            <UnidadeForm
+              initialData={unidadeEmEdicao}
+              isLoading={isCreating || isUpdating}
               onCancel={() => setIsModalOpen(false)}
               onSubmit={(data: any) => {
                 if (unidadeEmEdicao) {

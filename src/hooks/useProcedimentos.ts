@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../services/api';
+import { ApiResponse } from '../types/api';
 import { ProcedimentoResponse } from '../types/procedimento';
 import { toast } from 'sonner';
 
@@ -41,8 +42,9 @@ export function useProcedimentos() {
     queryKey: [...PROCEDIMENTOS_QUERY_KEY, 'todos'],
     queryFn: async () => {
       try {
-        const response = await api.get<ProcedimentoResponse[]>('/procedimentos/todos');
-        return Array.isArray(response.data) ? response.data : [];
+        const response = await api.get<ApiResponse<ProcedimentoResponse[]> | ProcedimentoResponse[]>('/procedimentos/todos');
+        const data = Array.isArray(response.data) ? response.data : response.data?.data;
+        return Array.isArray(data) ? data : [];
       } catch (error: any) {
         console.warn('Erro ao carregar procedimentos da API, usando dados mockados:', error);
         // Retorna todos os procedimentos mockados
@@ -63,8 +65,9 @@ export function useProcedimentosByModalidade(modalidade?: string) {
     queryFn: async () => {
       if (!modalidade) return [];
       try {
-        const response = await api.get<ProcedimentoResponse[]>(`/procedimentos/modalidade/${modalidade}`);
-        return Array.isArray(response.data) ? response.data : [];
+        const response = await api.get<ApiResponse<ProcedimentoResponse[]> | ProcedimentoResponse[]>(`/procedimentos/modalidade/${modalidade}`);
+        const data = Array.isArray(response.data) ? response.data : response.data?.data;
+        return Array.isArray(data) ? data : [];
       } catch (error: any) {
         console.warn(`Erro ao carregar procedimentos da modalidade ${modalidade}, usando dados mockados:`, error);
         // Retorna procedimentos mockados para a modalidade
