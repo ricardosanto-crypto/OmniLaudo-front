@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Building2, Plus, Trash2, Edit } from 'lucide-react';
+import { Plus, Trash2, Edit } from 'lucide-react';
 import { useUnidades, useInativarUnidade, useCreateUnidade, useUpdateUnidade } from '../../hooks/useUnidades';
 import { RoleGuard } from '../../components/auth/RoleGuard';
 import { Button } from '../../components/ui/button';
@@ -36,15 +36,17 @@ export function Unidades() {
 
   // Definição Declarativa das Colunas da Tabela
   const columns: ColumnDef<UnidadeResponse>[] = [
-    { header: 'Nome', accessorKey: 'nome', className: 'font-medium text-gray-900' },
+    { header: 'Nome', accessorKey: 'nome', className: 'font-semibold text-foreground' },
     { header: 'CNPJ', cell: (item) => item.cnpj || '-' },
     { header: 'Telefone', cell: (item) => item.telefone || '-' },
     {
       header: 'Status',
       cell: (item) => (
         <span
-          className={`px-2 py-1 rounded-full text-xs font-medium ${
-            item.ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+          className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-black tracking-wider border ${
+            item.ativo 
+              ? 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-900/40' 
+              : 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-900/40'
           }`}
         >
           {item.ativo ? 'Ativa' : 'Inativa'}

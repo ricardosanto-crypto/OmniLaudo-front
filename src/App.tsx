@@ -11,266 +11,194 @@ import { Equipamentos } from './pages/Equipamentos';
 import { Pacientes } from './pages/Pacientes';
 import { Agendamentos } from './pages/Agendamentos';
 import { WorklistTecnologo } from './pages/Tecnologo/Worklist';
+import { WorklistMedico } from './pages/Medico/Worklist';
 import { WorkspaceMedico } from './pages/Medico/Workspace';
-import { RoleGuard } from './components/auth/RoleGuard';
-import { Link } from 'react-router-dom';
+import { cn } from './lib/utils';
 import { 
   Users, 
   Calendar, 
-  Activity, 
-  FileText, 
-  Stethoscope,
-  Building, 
-  Settings, 
-  TrendingUp,
   Clock,
-  CheckCircle,
-  AlertCircle
+  CheckCircle
 } from 'lucide-react';
-import { useDashboardStats, useChartData, usePieData } from './hooks/useDashboard';
+import { useDashboardStats } from './hooks/useDashboard';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
-const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
-
 function Dashboard() {
   const { data: stats } = useDashboardStats();
-  const { data: chartData } = useChartData();
-  const { data: pieData } = usePieData();
 
-  const defaultStats = {
+  const currentStats = stats || {
     pacientes: 0,
     agendamentosHoje: 0,
     examesPendentes: 0,
     laudosFinalizados: 0
   };
 
-  const currentStats = stats || defaultStats;
-  const currentChartData = chartData || [];
-  const currentPieData = pieData || [];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-blue-900">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-background">
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Dashboard Header */}
+        <div className="flex flex-col gap-1 mb-6">
+          <div className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-widest">
+            <span className="text-slate-500">OmniLaudo</span>
+            <span className="text-blue-500">&gt;</span>
+            <span className="text-blue-500">Dashboard</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <h1 className="text-xl font-bold text-foreground tracking-tight">
+              Visão Geral da Operação
+            </h1>
+          </div>
+        </div>
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center justify-between">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {[
+            { label: 'Total de Pacientes', value: currentStats.pacientes.toLocaleString(), icon: Users, color: 'blue', change: '+3.2%', trend: 'up' },
+            { label: 'Agendamentos Hoje', value: currentStats.agendamentosHoje, icon: Calendar, color: 'cyan', change: '+8.7%', trend: 'up' },
+            { label: 'Exames Pendentes', value: currentStats.examesPendentes, icon: Clock, color: 'orange', change: '-12%', trend: 'down' },
+            { label: 'Laudos Finalizados', value: currentStats.laudosFinalizados, icon: CheckCircle, color: 'emerald', change: '+5.1%', trend: 'up' },
+          ].map((item, i) => (
+            <motion.div 
+              key={item.label}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 * (i + 1) }}
+              className="bg-card rounded-xl border border-border p-5 relative overflow-hidden group shadow-sm"
+            >
+              <div className="flex justify-between items-start mb-3">
+                <div className={cn(
+                  "p-2 rounded-lg transition-colors",
+                  item.color === 'blue' && "bg-blue-500/10 text-blue-500",
+                  item.color === 'cyan' && "bg-cyan-500/10 text-cyan-500",
+                  item.color === 'orange' && "bg-orange-500/10 text-orange-500",
+                  item.color === 'emerald' && "bg-emerald-500/10 text-emerald-500",
+                )}>
+                  <item.icon className="h-4 w-4" />
+                </div>
+              </div>
               <div>
-                <p className="text-sm font-medium text-gray-600">Total de Pacientes</p>
-                <p className="text-3xl font-bold text-gray-900">{currentStats.pacientes.toLocaleString()}</p>
+                <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1">{item.label}</p>
+                <p className="text-2xl font-bold text-foreground tracking-tight">{item.value}</p>
               </div>
-              <div className="bg-blue-100 p-3 rounded-full">
-                <Users className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Agendamentos Hoje</p>
-                <p className="text-3xl font-bold text-gray-900">{currentStats.agendamentosHoje}</p>
-              </div>
-              <div className="bg-green-100 p-3 rounded-full">
-                <Calendar className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Exames Pendentes</p>
-                <p className="text-3xl font-bold text-gray-900">{currentStats.examesPendentes}</p>
-              </div>
-              <div className="bg-yellow-100 p-3 rounded-full">
-                <Clock className="h-6 w-6 text-yellow-600" />
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Laudos Finalizados</p>
-                <p className="text-3xl font-bold text-gray-900">{currentStats.laudosFinalizados}</p>
-              </div>
-              <div className="bg-purple-100 p-3 rounded-full">
-                <CheckCircle className="h-6 w-6 text-purple-600" />
-              </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          ))}
         </div>
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
           <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.5 }}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+            className="lg:col-span-2 bg-card rounded-2xl border border-border p-8 shadow-sm"
           >
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <TrendingUp className="h-5 w-5 mr-2 text-blue-600" />
-              Exames por Mês
-            </h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={currentChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="exames" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+            <div className="flex justify-between items-start mb-8">
+              <div>
+                <h3 className="text-base font-bold text-foreground mb-0.5 uppercase tracking-tight">Exames por Mês</h3>
+                <p className="text-[10px] text-slate-500 font-medium">Realizados vs Agendados — Jan a Jun 2026</p>
+              </div>
+            </div>
+            
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart data={[
+                { name: 'Jan', realizados: 42, agendados: 48 },
+                { name: 'Fev', realizados: 52, agendados: 55 },
+                { name: 'Mar', realizados: 46, agendados: 50 },
+                { name: 'Abr', realizados: 60, agendados: 65 },
+                { name: 'Mai', realizados: 55, agendados: 60 },
+                { name: 'Jun', realizados: 67, agendados: 71 },
+              ]} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#0e111a', border: '1px solid #ffffff10', borderRadius: '12px' }}
+                  itemStyle={{ fontSize: '10px', fontWeight: 600 }}
+                />
+                <Bar dataKey="realizados" fill="#2563eb" radius={[4, 4, 0, 0]} barSize={24} />
+                <Bar dataKey="agendados" fill="#06b6d4" radius={[4, 4, 0, 0]} barSize={24} />
               </BarChart>
             </ResponsiveContainer>
+            
+            <div className="flex justify-center gap-6 mt-6">
+              <div className="flex items-center gap-2">
+                <div className="h-2.5 w-2.5 rounded-full bg-blue-600" />
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Realizados</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-2.5 w-2.5 rounded-full bg-cyan-500" />
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Agendados</span>
+              </div>
+            </div>
           </motion.div>
 
           <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.6 }}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+            className="bg-card rounded-xl border border-border p-6 flex flex-col shadow-sm"
           >
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Activity className="h-5 w-5 mr-2 text-green-600" />
-              Distribuição por Modalidade
-            </h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={currentPieData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {currentPieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="mb-6">
+              <h3 className="text-base font-bold text-foreground mb-0.5 uppercase tracking-tight">Por Modalidade</h3>
+              <p className="text-[10px] text-slate-500 font-medium">Distribuição do mês atual</p>
+            </div>
+            
+            <div className="relative flex-1 flex flex-col justify-center items-center min-h-[200px]">
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: 'Ressonância', value: 35 },
+                      { name: 'Tomografia', value: 28 },
+                      { name: 'Ultrassom', value: 22 },
+                      { name: 'Raio-X', value: 15 },
+                    ]}
+                    cx="50%" cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={8}
+                    dataKey="value"
+                  >
+                    <Cell fill="#2563eb" />
+                    <Cell fill="#06b6d4" />
+                    <Cell fill="#8b5cf6" />
+                    <Cell fill="#6366f1" />
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pt-1.5">
+                <p className="text-2xl font-bold text-foreground leading-none">321</p>
+                <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">Exames</p>
+              </div>
+            </div>
+
+            <div className="space-y-3 mt-6">
+              {[
+                { name: 'Ressonância', value: 35, color: 'bg-blue-600' },
+                { name: 'Tomografia', value: 28, color: 'bg-cyan-500' },
+                { name: 'Ultrassom', value: 22, color: 'bg-purple-500' },
+                { name: 'Raio-X', value: 15, color: 'bg-indigo-500' },
+              ].map(item => (
+                <div key={item.name} className="space-y-1">
+                  <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest">
+                    <div className="flex items-center gap-1.5">
+                      <div className={cn("h-1 w-1 rounded-full", item.color)} />
+                      <span className="text-slate-500">{item.name}</span>
+                    </div>
+                    <span className="text-foreground">{item.value}%</span>
+                  </div>
+                  <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${item.value}%` }}
+                      className={cn("h-full rounded-full", item.color)}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </motion.div>
         </div>
 
-        {/* Quick Actions */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-        >
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Ações Rápidas</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <RoleGuard allowedRoles={['SUPERADMIN', 'ADMIN']}>
-              <Link 
-                to="/unidades" 
-                className="flex items-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg hover:shadow-md transition-all group"
-              >
-                <Building className="h-8 w-8 text-blue-600 mr-4" />
-                <div>
-                  <span className="text-lg font-semibold text-blue-900 group-hover:text-blue-700">Gerenciar Unidades</span>
-                  <p className="text-sm text-blue-700">Configure filiais e matrizes</p>
-                </div>
-              </Link>
-
-              <Link 
-                to="/salas" 
-                className="flex items-center p-4 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg hover:shadow-md transition-all group"
-              >
-                <Settings className="h-8 w-8 text-green-600 mr-4" />
-                <div>
-                  <span className="text-lg font-semibold text-green-900 group-hover:text-green-700">Gerenciar Salas</span>
-                  <p className="text-sm text-green-700">Administre salas de exames</p>
-                </div>
-              </Link>
-
-              <Link 
-                to="/equipamentos" 
-                className="flex items-center p-4 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-lg hover:shadow-md transition-all group"
-              >
-                <Activity className="h-8 w-8 text-purple-600 mr-4" />
-                <div>
-                  <span className="text-lg font-semibold text-purple-900 group-hover:text-purple-700">Equipamentos</span>
-                  <p className="text-sm text-purple-700">Inventário e configuração DICOM</p>
-                </div>
-              </Link>
-            </RoleGuard>
-
-            <Link
-              to="/pacientes"
-              className="flex items-center p-4 bg-gradient-to-r from-indigo-50 to-indigo-100 border border-indigo-200 rounded-lg hover:shadow-md transition-all group"
-            >
-              <Users className="h-8 w-8 text-indigo-600 mr-4" />
-              <div>
-                <span className="text-lg font-semibold text-indigo-900 group-hover:text-indigo-700">Pacientes</span>
-                <p className="text-sm text-indigo-700">Prontuário e histórico</p>
-              </div>
-            </Link>
-
-            <Link
-              to="/agendamentos"
-              className="flex items-center p-4 bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-lg hover:shadow-md transition-all group"
-            >
-              <Calendar className="h-8 w-8 text-orange-600 mr-4" />
-              <div>
-                <span className="text-lg font-semibold text-orange-900 group-hover:text-orange-700">Agendamentos</span>
-                <p className="text-sm text-orange-700">Agenda do dia e fila</p>
-              </div>
-            </Link>
-
-            <RoleGuard allowedRoles={['SUPERADMIN', 'TECNOLOGO', 'ADMIN']}>
-              <Link
-                to="/worklist"
-                className="flex items-center p-4 bg-gradient-to-r from-cyan-50 to-cyan-100 border border-cyan-200 rounded-lg hover:shadow-md transition-all group"
-              >
-                <Stethoscope className="h-8 w-8 text-cyan-600 mr-4" />
-                <div>
-                  <span className="text-lg font-semibold text-cyan-900 group-hover:text-cyan-700">Executar Exames</span>
-                  <p className="text-sm text-cyan-700">Painel técnico e Worklist DICOM</p>
-                </div>
-              </Link>
-            </RoleGuard>
-
-            <RoleGuard allowedRoles={['SUPERADMIN', 'MEDICO', 'ADMIN']}>
-              <Link
-                to="/worklist"
-                className="flex items-center p-4 bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200 rounded-lg hover:shadow-md transition-all group"
-              >
-                <FileText className="h-8 w-8 text-slate-600 mr-4" />
-                <div>
-                  <span className="text-lg font-semibold text-slate-900 group-hover:text-slate-700">Laudar Exames</span>
-                  <p className="text-sm text-slate-700">Central de diagnóstico e laudos</p>
-                </div>
-              </Link>
-            </RoleGuard>
-          </div>
-        </motion.div>
       </main>
     </div>
   );
@@ -308,6 +236,7 @@ function App() {
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={['SUPERADMIN', 'MEDICO', 'ADMIN']} />}>
+          <Route path="/worklist-medico" element={<WorklistMedico />} />
           <Route path="/workspace/:id" element={<WorkspaceMedico />} />
         </Route>
 

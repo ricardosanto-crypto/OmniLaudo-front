@@ -44,3 +44,15 @@ export function useUpdateAgendamentoStatus() {
     },
   });
 }
+
+export function useAgendamentoById(id: string | undefined) {
+  return useQuery({
+    queryKey: [...AGENDAMENTOS_KEY, id],
+    queryFn: async () => {
+      if (!id) return null;
+      const response = await api.get<ApiResponse<any>>(`/agendamentos/${id}`);
+      return response.data.data;
+    },
+    enabled: !!id,
+  });
+}

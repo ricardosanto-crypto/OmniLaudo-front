@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { DoorOpen, Plus, Trash2, Edit } from 'lucide-react';
+import { Plus, Trash2, Edit } from 'lucide-react';
 import { useSalas, useInativarSala, useCreateSala, useUpdateSala } from '../../hooks/useSalas';
 import { useUnidades } from '../../hooks/useUnidades';
 import { RoleGuard } from '../../components/auth/RoleGuard';
@@ -59,7 +59,7 @@ export function Salas() {
   };
 
   const columns: ColumnDef<SalaResponse>[] = [
-    { header: 'Nome da Sala', accessorKey: 'nome', className: 'font-medium text-gray-900' },
+    { header: 'Nome da Sala', accessorKey: 'nome', className: 'font-semibold text-foreground' },
     {
       header: 'Unidade',
       cell: (item) => unidadeMap.get(item.unidadeId) || item.unidadeNome || item.unidadeId,
@@ -67,8 +67,10 @@ export function Salas() {
     {
       header: 'Status',
       cell: (item) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          item.ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+        <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-black tracking-wider border ${
+          item.ativo 
+            ? 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-900/40' 
+            : 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-900/40'
         }`}>
           {item.ativo ? 'Ativa' : 'Inativa'}
         </span>

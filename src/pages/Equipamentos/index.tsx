@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Cpu, Plus, Edit } from 'lucide-react';
+import { Plus, Edit } from 'lucide-react';
 import { useEquipamentos, useCreateEquipamento, useUpdateEquipamento } from '../../hooks/useEquipamentos';
 import { DataTable, ColumnDef } from '../../components/ui/data-table';
 import { EquipamentoResponse } from '../../types/equipamento';
@@ -27,10 +27,10 @@ export function Equipamentos() {
   };
 
   const columns: ColumnDef<EquipamentoResponse>[] = [
-    { header: 'Nome', accessorKey: 'nome', className: 'font-medium text-gray-900' },
+    { header: 'Nome', accessorKey: 'nome', className: 'font-semibold text-foreground' },
     { 
         header: 'Modalidade', 
-        cell: (i) => <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-bold">{i.modalidade}</span> 
+        cell: (i) => <span className="bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-900/40 text-[10px] font-black uppercase tracking-wider">{i.modalidade}</span> 
     },
     { header: 'Fabricante', accessorKey: 'fabricante' },
     { header: 'Sala', accessorKey: 'salaNome' },
@@ -38,9 +38,9 @@ export function Equipamentos() {
       header: 'Status',
       cell: (i) => (
         <div className="flex gap-2">
-          {i.emManutencao && <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded text-[10px] font-bold">MANUTENÇÃO</span>}
-          {!i.calibrado && <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded text-[10px] font-bold">NÃO CALIBRADO</span>}
-          {i.ativo && !i.emManutencao && <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-bold">OPERACIONAL</span>}
+          {i.emManutencao && <span className="bg-orange-100 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 px-2 py-0.5 rounded border border-orange-200 dark:border-orange-900/40 text-[10px] font-black uppercase tracking-wider">MANUTENÇÃO</span>}
+          {!i.calibrado && <span className="bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400 px-2 py-0.5 rounded border border-red-200 dark:border-red-900/40 text-[10px] font-black uppercase tracking-wider">NÃO CALIBRADO</span>}
+          {i.ativo && !i.emManutencao && <span className="bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded border border-green-200 dark:border-green-900/40 text-[10px] font-black uppercase tracking-wider">OPERACIONAL</span>}
         </div>
       )
     },

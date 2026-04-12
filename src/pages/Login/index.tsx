@@ -48,8 +48,9 @@ export function Login() {
 
   const mutation = useMutation<ApiResponse<TokenResponse>, ApiResponse<null>, LoginFormInputs>({
     mutationFn: (data) => api.post('/auth/login', data).then((res) => res.data),
-    onSuccess: (response) => {
-      const payload = response.data ?? response;
+    onSuccess: (response: any) => {
+      // O backend retorna ApiResponse<TokenResponse>, onde o DTO está em .data
+      const payload = response.data || response;
       const token = payload?.token;
 
       if (!token) {
@@ -74,10 +75,10 @@ export function Login() {
   });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-4">
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-100 rounded-full opacity-20"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-100 rounded-full opacity-20"></div>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-100 dark:bg-blue-900/20 rounded-full blur-3xl opacity-20 transition-colors"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-100 dark:bg-indigo-900/20 rounded-full blur-3xl opacity-20 transition-colors"></div>
       </div>
       
       <motion.div 
@@ -86,7 +87,7 @@ export function Login() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md z-10"
       >
-        <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
+        <Card className="shadow-2xl border border-border bg-card/80 backdrop-blur-md">
           <CardHeader className="text-center pb-2">
             <motion.div 
               initial={{ scale: 0 }}
@@ -96,10 +97,10 @@ export function Login() {
             >
               <Stethoscope className="h-8 w-8 text-white" />
             </motion.div>
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
               OmniLaudo AI
             </CardTitle>
-            <CardDescription className="text-gray-600 mt-2">
+            <CardDescription className="text-gray-600 dark:text-slate-400 mt-2">
               Sistema Inteligente de Diagnóstico por Imagem
             </CardDescription>
           </CardHeader>
@@ -107,40 +108,40 @@ export function Login() {
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 flex items-center">
-                  <Shield className="h-4 w-4 mr-2 text-blue-600" />
+                <label className="text-sm font-semibold text-gray-700 dark:text-slate-300 flex items-center">
+                  <Shield className="h-4 w-4 mr-2 text-blue-600 dark:text-blue-400" />
                   E-mail Institucional
                 </label>
                 <Input
                   type="email"
                   placeholder="medico@clinica.com.br"
                   {...register('email')}
-                  className={`h-12 text-base ${errors.email ? 'border-red-500 focus-visible:ring-red-500' : 'border-gray-300 focus-visible:ring-blue-500'}`}
+                  className={`h-12 text-base dark:bg-slate-950 dark:border-slate-700 ${errors.email ? 'border-red-500 focus-visible:ring-red-500' : 'border-gray-300 focus-visible:ring-blue-500'}`}
                 />
                 {errors.email && <span className="text-red-500 text-xs">{errors.email.message}</span>}
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 flex items-center">
-                  <Activity className="h-4 w-4 mr-2 text-blue-600" />
+                <label className="text-sm font-semibold text-gray-700 dark:text-slate-300 flex items-center">
+                  <Activity className="h-4 w-4 mr-2 text-blue-600 dark:text-blue-400" />
                   Senha
                 </label>
                 <Input
                   type="password"
                   placeholder="••••••••"
                   {...register('senha')}
-                  className={`h-12 text-base ${errors.senha ? 'border-red-500 focus-visible:ring-red-500' : 'border-gray-300 focus-visible:ring-blue-500'}`}
+                  className={`h-12 text-base dark:bg-slate-950 dark:border-slate-700 ${errors.senha ? 'border-red-500 focus-visible:ring-red-500' : 'border-gray-300 focus-visible:ring-blue-500'}`}
                 />
                 {errors.senha && <span className="text-red-500 text-xs">{errors.senha.message}</span>}
               </div>
 
               <Button 
                 type="submit" 
-                className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-200" 
+                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-200" 
                 disabled={mutation.isPending}
               >
                 {mutation.isPending ? (
-                  <div className="flex items-center">
+                  <div className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                     Autenticando...
                   </div>
@@ -151,7 +152,7 @@ export function Login() {
             </form>
             
             <div className="mt-6 text-center">
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-slate-500">
                 Sistema seguro • Dados protegidos • Conformidade HIPAA
               </p>
             </div>

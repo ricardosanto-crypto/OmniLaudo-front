@@ -16,13 +16,13 @@ export function AcaoCrud({
   labelCancel = "Cancelar" 
 }: AcaoCrudProps) {
   return (
-    <div className="flex justify-end gap-3 pt-4 border-t mt-4">
+    <div className="flex justify-end gap-3 pt-4 border-t dark:border-slate-800 mt-4">
       <Button 
         type="button" 
         variant="outline" 
         onClick={onCancel} 
         disabled={isLoading}
-        className="text-gray-500"
+        className="text-gray-500 dark:text-slate-400 dark:border-slate-700 dark:hover:bg-slate-800"
       >
         <X size={16} className="mr-2" /> {labelCancel}
       </Button>

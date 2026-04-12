@@ -47,7 +47,7 @@ export function AgendamentoForm({ onSubmit, isLoading, onCancel }: any) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">Paciente</label>
+        <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Paciente</label>
         <Controller
           control={control}
           name="pacienteId"
@@ -73,7 +73,7 @@ export function AgendamentoForm({ onSubmit, isLoading, onCancel }: any) {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">Equipamento / Exame</label>
+        <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Equipamento / Exame</label>
         <Controller
           control={control}
           name="equipamentoId"
@@ -99,9 +99,9 @@ export function AgendamentoForm({ onSubmit, isLoading, onCancel }: any) {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Procedimento (TUSS)</label>
+        <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Procedimento (TUSS)</label>
         {procedimentos.length === 0 && modalidadeSelecionada && !isLoadingProcedimentos ? (
-          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-xs">
+          <div className="p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800/50 rounded text-yellow-800 dark:text-yellow-400 text-xs">
             Nenhum procedimento disponível para esta modalidade. Verifique com o administrador.
           </div>
         ) : (
@@ -137,7 +137,7 @@ export function AgendamentoForm({ onSubmit, isLoading, onCancel }: any) {
                         </SelectItem>
                       ))
                     ) : (
-                      <div className="p-2 text-sm text-gray-500">Sem procedimentos disponíveis</div>
+                      <div className="p-2 text-sm text-gray-500 dark:text-slate-500">Sem procedimentos disponíveis</div>
                     )}
                   </SelectContent>
                 </Select>
@@ -152,12 +152,12 @@ export function AgendamentoForm({ onSubmit, isLoading, onCancel }: any) {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Data e Hora</label>
+          <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Data e Hora</label>
           <Input type="datetime-local" {...register('dataHoraAgendada')} />
           {errors.dataHoraAgendada && <p className="text-red-500 text-xs">{String(errors.dataHoraAgendada.message)}</p>}
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Duração (min)</label>
+          <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Duração (min)</label>
           <Input type="number" {...register('duracaoEstimadaMinutos')} />
         </div>
       </div>

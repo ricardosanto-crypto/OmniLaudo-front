@@ -21,11 +21,11 @@ export function Pacientes() {
     { 
       header: 'Nome Completo', 
       cell: (i) => `${i.nome} ${i.sobrenome}`, 
-      className: 'font-medium text-gray-900' 
+      className: 'font-medium text-gray-900 dark:text-white' 
     },
-    { header: 'Documento', accessorKey: 'documento' },
-    { header: 'Telefone', cell: (i) => i.telefone || '-' },
-    { header: 'Convênio', cell: (i) => i.seguroSaude || 'Particular' },
+    { header: 'Documento', accessorKey: 'documento', className: 'text-muted-foreground font-mono text-xs' },
+    { header: 'Telefone', cell: (i) => i.telefone || '-', className: 'text-muted-foreground' },
+    { header: 'Convênio', cell: (i) => i.seguroSaude || 'Particular', className: 'text-muted-foreground' },
     {
       header: <span className="sr-only">Ações</span>,
       className: 'text-right',
@@ -67,10 +67,10 @@ export function Pacientes() {
               <span className="text-sm font-medium uppercase tracking-[0.18em]">Pacientes</span>
             </div>
             <div className="relative w-full md:w-80">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar por nome ou sobrenome..."
-                className="pl-9"
+                className="pl-9 dark:bg-card dark:border-border"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />

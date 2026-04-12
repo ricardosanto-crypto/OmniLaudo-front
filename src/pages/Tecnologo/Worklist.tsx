@@ -13,30 +13,32 @@ import { PageWrapper } from '../../components/layout/PageWrapper';
 export function WorklistTecnologo() {
   const [page, setPage] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [selectedAgendamento, setSelectedAgendamento] = useState<AgendamentoResponse | null>(null);
   const { data: pageAgend, isLoading } = useAgendamentos(page, 10);
   const { mutate: updateStatus } = useUpdateAgendamentoStatus();
-  const { mutate: uploadDicom, isLoading: isUploading } = useUploadDicom();
+  const { mutate: uploadDicom, isPending: isUploading } = useUploadDicom();
 
   const openUploadDialog = (agendamento: AgendamentoResponse) => {
     setSelectedAgendamento(agendamento);
-    setSelectedFile(null);
+    setSelectedFiles([]);
     setIsDialogOpen(true);
   };
 
   const closeUploadDialog = () => {
     setIsDialogOpen(false);
     setSelectedAgendamento(null);
-    setSelectedFile(null);
+    setSelectedFiles([]);
   };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setSelectedFile(event.target.files?.[0] || null);
+    if (event.target.files) {
+      setSelectedFiles(Array.from(event.target.files));
+    }
   };
 
   const submitUpload = () => {
-    if (!selectedAgendamento || !selectedFile) return;
+    if (!selectedAgendamento || selectedFiles.length === 0) return;
 
     uploadDicom({
       accessionNumber: selectedAgendamento.accessionNumber,
@@ -45,7 +47,7 @@ export function WorklistTecnologo() {
       examType: selectedAgendamento.procedimentoNome,
       modality: selectedAgendamento.equipamentoModalidade,
       description: selectedAgendamento.procedimentoNome,
-      file: selectedFile,
+      files: selectedFiles,
     });
     closeUploadDialog();
   };
@@ -68,11 +70,11 @@ export function WorklistTecnologo() {
       header: 'Status', 
       cell: (i) => {
         const styles: Record<string, string> = {
-          AGENDADO: "bg-gray-100 text-gray-700 border-gray-200",
-          EM_ATENDIMENTO: "bg-amber-100 text-amber-700 border-amber-200",
-          EXECUTANDO: "bg-blue-100 text-blue-700 border-blue-200 animate-pulse",
-          REALIZADO: "bg-green-100 text-green-700 border-green-200",
-          CANCELADO: "bg-red-100 text-red-700 border-red-200",
+          AGENDADO: "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700",
+          EM_ATENDIMENTO: "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50",
+          EXECUTANDO: "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/50 animate-pulse",
+          REALIZADO: "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800/50",
+          CANCELADO: "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800/50",
         };
         return (
           <span className={`px-2 py-1 rounded-full text-[10px] font-bold border ${styles[i.status] || styles.AGENDADO}`}>
@@ -81,7 +83,7 @@ export function WorklistTecnologo() {
         );
       }
     },
-    { header: 'Paciente', accessorKey: 'pacienteNome', className: 'font-semibold text-gray-900' },
+    { header: 'Paciente', accessorKey: 'pacienteNome', className: 'font-semibold text-foreground' },
     { 
       header: 'Accession Number', 
       cell: (i) => (
@@ -128,7 +130,7 @@ export function WorklistTecnologo() {
             <Button
               size="sm"
               variant="outline"
-              className="text-slate-700 border-slate-300 hover:bg-slate-50"
+              className="text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
               onClick={() => openUploadDialog(i)}
             >
               <UploadCloud size={14} className="mr-2" /> Upload
@@ -147,32 +149,32 @@ export function WorklistTecnologo() {
   ];
 
   return (
-    <PageWrapper>
+    <PageWrapper title="Painel de Execução">
       <div className="p-8 max-w-7xl mx-auto space-y-8">
-        <div className="flex justify-between items-center bg-slate-900 p-6 rounded-2xl text-white shadow-xl">
+        <div className="flex justify-between items-center bg-card p-6 rounded-2xl text-foreground shadow-xl border border-border">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-primary-500 rounded-lg">
               <Activity size={24} />
             </div>
             <div>
               <h1 className="text-2xl font-bold">Painel de Execução</h1>
-              <p className="text-slate-400 text-sm">Controle de fluxo técnico e Worklist DICOM.</p>
+              <p className="text-slate-400 dark:text-slate-500 text-sm">Controle de fluxo técnico e Worklist DICOM.</p>
             </div>
           </div>
           <div className="flex gap-4">
             <div className="text-right">
-                <p className="text-xs text-slate-500 uppercase font-bold">Fila de Espera</p>
-                <p className="text-xl font-mono">{pageAgend?.totalElements || 0}</p>
+                <p className="text-xs text-muted-foreground uppercase font-bold">Fila de Espera</p>
+                <p className="text-xl font-mono text-foreground">{pageAgend?.totalElements || 0}</p>
             </div>
           </div>
         </div>
 
         <div className="flex gap-4 items-center">
           <div className="relative flex-1">
-              <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
-              <Input placeholder="Buscar paciente na fila..." className="pl-10" />
+              <Search className="absolute left-3 top-2.5 text-gray-400 dark:text-slate-500" size={18} />
+              <Input placeholder="Buscar paciente na fila..." className="pl-10 dark:bg-slate-900 dark:border-slate-800" />
           </div>
-          <Button variant="outline">Filtrar por Sala</Button>
+          <Button variant="outline" className="dark:border-slate-800 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-400">Filtrar por Sala</Button>
         </div>
 
         <DataTable 
@@ -195,36 +197,41 @@ export function WorklistTecnologo() {
 
             <div className="space-y-4 mt-4">
               <div className="grid gap-2">
-                <label className="text-sm font-medium text-slate-700">Paciente</label>
-                <p className="text-base text-slate-900">{selectedAgendamento?.pacienteNome || 'Nenhum paciente selecionado'}</p>
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Paciente</label>
+                <p className="text-base text-slate-900 dark:text-white">{selectedAgendamento?.pacienteNome || 'Nenhum paciente selecionado'}</p>
               </div>
 
               <div className="grid gap-2">
-                <label className="text-sm font-medium text-slate-700">Accession Number</label>
-                <p className="text-sm text-slate-700 font-mono">{selectedAgendamento?.accessionNumber || '-'}</p>
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Accession Number</label>
+                <p className="text-sm text-slate-700 dark:text-slate-400 font-mono">{selectedAgendamento?.accessionNumber || '-'}</p>
               </div>
 
               <div className="grid gap-2">
-                <label className="text-sm font-medium text-slate-700" htmlFor="dicom-file">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="dicom-file">
                   Arquivo DICOM
                 </label>
                 <input
                   id="dicom-file"
                   type="file"
                   accept=".dcm,.dicom"
+                  multiple
                   onChange={handleFileChange}
-                  className="block w-full rounded-lg border border-slate-200 bg-white p-2 text-sm text-slate-700 shadow-sm"
+                  className="block w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-2 text-sm text-slate-700 dark:text-slate-300 shadow-sm"
                 />
-                <p className="text-xs text-slate-500">Selecione um arquivo DICOM real a ser enviado para o Orthanc.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-500">
+                  {selectedFiles.length > 0 
+                    ? `${selectedFiles.length} arquivo(s) selecionado(s).` 
+                    : "Selecione um ou mais arquivos DICOM para enviar diretamente ao Orthanc (Teste)."}
+                </p>
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
                 <Button variant="outline" onClick={closeUploadDialog}>Cancelar</Button>
                 <Button
-                  disabled={!selectedFile || isUploading}
+                  disabled={selectedFiles.length === 0 || isUploading}
                   onClick={submitUpload}
                 >
-                  {isUploading ? 'Enviando...' : 'Enviar DICOM'}
+                  {isUploading ? 'Enviando...' : 'Enviar para Orthanc'}
                 </Button>
               </div>
             </div>

@@ -21,12 +21,12 @@ export function Agendamentos() {
       header: 'Horário', 
       cell: (i) => (
         <div className="flex flex-col">
-          <span className="font-bold text-gray-900">{format(new Date(i.dataHoraAgendada), 'HH:mm')}</span>
+          <span className="font-bold text-foreground">{format(new Date(i.dataHoraAgendada), 'HH:mm')}</span>
           <span className="text-[10px] text-gray-500">{format(new Date(i.dataHoraAgendada), 'dd/MM/yyyy')}</span>
         </div>
       )
     },
-    { header: 'Paciente', accessorKey: 'pacienteNome', className: 'font-medium text-gray-900' },
+    { header: 'Paciente', accessorKey: 'pacienteNome', className: 'font-semibold text-foreground' },
     { 
       header: 'Exame', 
       cell: (i) => (
@@ -39,7 +39,7 @@ export function Agendamentos() {
     { 
       header: 'Status', 
       cell: (i) => (
-        <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-[10px] font-bold border border-blue-200 uppercase">
+        <span className="bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-900/40 text-[10px] font-black uppercase tracking-wider">
           {i.status}
         </span>
       )

@@ -6,6 +6,10 @@ import './index.css'
 import { ThemeProvider } from "next-themes";
 import { useAuthStore } from './store/useAuthStore';
 import { api } from './services/api';
+import { initCornerstone } from './lib/cornerstone';
+
+// Inicializa o motor do visualizador DICOM
+initCornerstone();
 
 // Função para validar token na inicialização
 const validateStoredToken = async () => {

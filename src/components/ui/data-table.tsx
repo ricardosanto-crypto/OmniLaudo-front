@@ -42,10 +42,10 @@ export function DataTable<T>({
   onPageChange,
 }: DataTableProps<T>) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+    <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden flex flex-col">
       <div className="overflow-x-auto">
         <Table>
-          <TableHeader className="bg-gray-50">
+          <TableHeader className="bg-muted/30">
             <TableRow>
               {columns.map((col, index) => (
                 <TableHead key={index} className={col.className}>
@@ -60,20 +60,20 @@ export function DataTable<T>({
                 <TableRow key={`skeleton-${i}`}>
                    {columns.map((_, j) => (
                     <TableCell key={`cell-${j}`}>
-                      <Skeleton className="h-6 w-full bg-slate-100 dark:bg-slate-800" />
+                      <Skeleton className="h-6 w-full opacity-20" />
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center text-gray-500">
+                <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
                   {emptyMessage}
                 </TableCell>
               </TableRow>
             ) : (
               data.map((item, rowIndex) => (
-                <TableRow key={rowIndex} className="hover:bg-gray-50 transition-colors">
+                <TableRow key={rowIndex} className="hover:bg-muted/20 transition-colors">
                   {columns.map((col, colIndex) => (
                     <TableCell key={colIndex} className={col.className}>
                       {col.cell
@@ -90,26 +90,26 @@ export function DataTable<T>({
         </Table>
       </div>
 
-      {/* Paginação do Spring Boot */}
+      {/* Paginação */}
       {pageInfo && onPageChange && (
-        <div className="p-4 border-t border-gray-200 text-sm text-gray-500 flex justify-between items-center bg-white">
+        <div className="p-4 border-t border-border text-sm text-muted-foreground flex justify-between items-center bg-card/50">
           <span>
-            Mostrando página {pageInfo.number + 1} de {pageInfo.totalPages || 1}
+            Página {(Number(pageInfo.number) || 0) + 1} de {Number(pageInfo.totalPages) || 1}
           </span>
           <div className="flex items-center gap-4">
-            <span>Total: {pageInfo.totalElements} registros</span>
+            <span>{Number(pageInfo.totalElements) || 0} registros</span>
             <div className="flex gap-2">
               <button
-                onClick={() => onPageChange(pageInfo.number - 1)}
-                disabled={pageInfo.number === 0 || isLoading}
-                className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => onPageChange(Number(pageInfo.number) - 1)}
+                disabled={Number(pageInfo.number) === 0 || isLoading}
+                className="px-3 py-1.5 border border-border rounded-lg hover:bg-muted/50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors font-medium"
               >
                 Anterior
               </button>
               <button
-                onClick={() => onPageChange(pageInfo.number + 1)}
-                disabled={pageInfo.number >= pageInfo.totalPages - 1 || isLoading}
-                className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => onPageChange(Number(pageInfo.number) + 1)}
+                disabled={Number(pageInfo.number) >= (Number(pageInfo.totalPages) || 1) - 1 || isLoading}
+                className="px-3 py-1.5 border border-border rounded-lg hover:bg-muted/50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors font-medium"
               >
                 Próxima
               </button>

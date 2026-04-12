@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../services/api';
 import { ApiResponse } from '../types/api';
 import { ProcedimentoResponse } from '../types/procedimento';
-import { toast } from 'sonner';
+
 
 export const PROCEDIMENTOS_QUERY_KEY = ['procedimentos'];
 

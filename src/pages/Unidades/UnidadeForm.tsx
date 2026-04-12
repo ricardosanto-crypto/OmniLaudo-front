@@ -54,7 +54,7 @@ export function UnidadeForm({ initialData, onSubmit, isLoading, onCancel }: Unid
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">Nome da Unidade <span className="text-red-500">*</span></label>
+        <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Nome da Unidade <span className="text-red-500">*</span></label>
         <Input 
           placeholder="Ex: OmniLaudo - Matriz" 
           {...register('nome')} 
@@ -64,17 +64,17 @@ export function UnidadeForm({ initialData, onSubmit, isLoading, onCancel }: Unid
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">CNPJ</label>
+        <label className="text-sm font-medium text-gray-700 dark:text-slate-300">CNPJ</label>
         <Input placeholder="Apenas números" {...register('cnpj')} />
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">Endereço Completo</label>
+        <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Endereço Completo</label>
         <Input placeholder="Av. Central, 1000" {...register('endereco')} />
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">Telefone</label>
+        <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Telefone</label>
         <Input placeholder="(11) 99999-9999" {...register('telefone')} />
       </div>
 

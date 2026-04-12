@@ -36,9 +36,13 @@ export const useAuthStore = create<AuthState>()(
         {
             name: '@omnilaudo/auth', // Chave no localStorage
             partialize: (state) => ({ token: state.token, user: state.user }),
-            onRehydrateStorage: () => (state) => {
+            onRehydrateStorage: () => (state, error) => {
+                if (error) {
+                    console.error('Erro ao reidratar auth storage:', error);
+                    return;
+                }
                 if (state?.token && state.user) {
-                    set({ isAuthenticated: true });
+                    state.isAuthenticated = true;
                 }
             },
         }

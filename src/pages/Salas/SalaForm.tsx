@@ -46,13 +46,13 @@ export function SalaForm({ initialData, onSubmit, isLoading, onCancel }: SalaFor
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
       <div className="space-y-2">
-        <label className="text-sm font-medium">Nome da Sala</label>
+        <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Nome da Sala</label>
         <Input {...register('nome')} placeholder="Ex: Sala de Ressonância 01" />
         {errors.nome && <p className="text-red-500 text-xs">{String(errors.nome.message)}</p>}
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Unidade Responsável</label>
+        <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Unidade Responsável</label>
         <Controller
           control={control}
           name="unidadeId"

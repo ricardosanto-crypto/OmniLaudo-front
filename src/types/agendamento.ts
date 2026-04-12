@@ -26,6 +26,7 @@ export interface AgendamentoResponse {
   dataHoraAgendada: string;
   duracaoEstimadaMinutos: number;
   accessionNumber: string; // Gerado pelo Back para o DICOM
+  prioridade?: 'NORMAL' | 'URGENTE';
 }
 
 export type AgendamentoPage = Page<AgendamentoResponse>;
