@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/store/useAuthStore';
 
 // Tipagem mockada para o front, isso virá do back
 export interface SerieDicomView {
@@ -14,6 +16,46 @@ interface SeriesSidebarProps {
   series: SerieDicomView[];
   activeSeriesId: string | null;
   onSelectSeries: (id: string) => void;
+}
+
+/**
+ * Busca uma imagem com JWT e retorna uma blob URL para uso em <img>.
+ */
+function useAuthImage(url: string | undefined) {
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const token = useAuthStore((s) => s.token);
+
+  useEffect(() => {
+    if (!url || !token) return;
+
+    let objectUrl: string | null = null;
+
+    fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => (res.ok ? res.blob() : Promise.reject('Erro ao buscar preview')))
+      .then((blob) => {
+        objectUrl = URL.createObjectURL(blob);
+        setBlobUrl(objectUrl);
+      })
+      .catch(() => setBlobUrl(null));
+
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [url, token]);
+
+  return blobUrl;
+}
+
+/** Thumbnail autenticado para cada série */
+function SeriesThumb({ url, alt }: { url: string; alt: string }) {
+  const blobUrl = useAuthImage(url);
+  return (
+    <img
+      src={blobUrl || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}
+      alt={alt}
+      className="h-full w-full object-cover opacity-80"
+    />
+  );
 }
 
 export function SeriesSidebar({ series, activeSeriesId, onSelectSeries }: SeriesSidebarProps) {
@@ -44,14 +86,7 @@ export function SeriesSidebar({ series, activeSeriesId, onSelectSeries }: Series
               </div>
               <div className="flex gap-3">
                 <div className="h-16 w-16 shrink-0 overflow-hidden rounded border border-slate-700 bg-black relative">
-                  <img 
-                    src={serie.previewUrl} 
-                    alt={serie.descricao}
-                    className="h-full w-full object-cover opacity-80"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; // Spacer transparente
-                    }}
-                  />
+                  <SeriesThumb url={serie.previewUrl} alt={serie.descricao} />
                 </div>
                 <div className={cn("flex flex-col justify-center", !isActive && "opacity-70 group-hover:opacity-100")}>
                   <span className="w-fit rounded bg-purple-900/50 px-1 py-0.5 text-[8px] font-bold text-purple-400 border border-purple-800/50">

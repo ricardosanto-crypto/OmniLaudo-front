@@ -26,6 +26,20 @@ export function initCornerstone() {
     showSVGCursors: true,
   });
 
+  // 2.1 Registra TODAS as ferramentas globalmente (obrigatório antes de usar em qualquer element)
+  cornerstoneTools.addTool(cornerstoneTools.WwwcTool);
+  cornerstoneTools.addTool(cornerstoneTools.PanTool);
+  cornerstoneTools.addTool(cornerstoneTools.ZoomTool);
+  cornerstoneTools.addTool(cornerstoneTools.LengthTool);
+  cornerstoneTools.addTool(cornerstoneTools.AngleTool);
+  cornerstoneTools.addTool(cornerstoneTools.ZoomMouseWheelTool);
+  cornerstoneTools.addTool(cornerstoneTools.EllipticalRoiTool);
+  cornerstoneTools.addTool(cornerstoneTools.RectangleRoiTool);
+  cornerstoneTools.addTool(cornerstoneTools.ProbeTool);
+  cornerstoneTools.addTool(cornerstoneTools.ArrowAnnotateTool);
+  cornerstoneTools.addTool(cornerstoneTools.TextMarkerTool);
+  cornerstoneTools.addTool(cornerstoneTools.EraserTool);
+
   // 3. Configuração dos Web Workers (Alta Performance para decodificar .dcm)
   // Usamos o unpkg para carregar os workers dinamicamente no Vite sem dor de cabeça de build
   const config = {
@@ -43,16 +57,16 @@ export function initCornerstone() {
     beforeSend: function (xhr: XMLHttpRequest) {
       // Pega o token atualizado direto do Zustand (sua store)
       const token = useAuthStore.getState().token;
-      
+
       if (token) {
         xhr.setRequestHeader('Authorization', `Bearer ${token}`);
       }
-      
+
       // Opcional: Adicione headers extras se seu proxy precisar
       // xhr.setRequestHeader('Accept', 'application/dicom');
     }
   });
 
   isInitialized = true;
-  console.log('🟩 Cornerstone.js inicializado com sucesso (WADO + Tools + JWT Auth)');
+  console.log(' Cornerstone.js inicializado com sucesso (WADO + Tools + JWT Auth)');
 }

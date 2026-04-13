@@ -13,6 +13,7 @@ import { Agendamentos } from './pages/Agendamentos';
 import { WorklistTecnologo } from './pages/Tecnologo/Worklist';
 import { WorklistMedico } from './pages/Medico/Worklist';
 import { WorkspaceMedico } from './pages/Medico/Workspace';
+import { Configuracoes } from './pages/Configuracoes';
 import { cn } from './lib/utils';
 import { 
   Users, 
@@ -208,10 +209,11 @@ function Dashboard() {
 function App() {
   const location = useLocation();
   const isLoginPage = location.pathname === '/login';
+  const isWorkspace = location.pathname.startsWith('/workspace');
 
   return (
     <QueryClientProvider client={queryClient}>
-      {!isLoginPage && <PageHeader />}
+      {!isLoginPage && !isWorkspace && <PageHeader />}
       <Routes>
         <Route path="/login" element={<Login />} />
 
@@ -228,14 +230,14 @@ function App() {
           <Route path="/unidades" element={<Unidades />} />
           <Route path="/salas" element={<Salas />} />
           <Route path="/equipamentos" element={<Equipamentos />} />
-          {/* Aqui entrarão rotas como /usuarios, /equipamentos */}
+          <Route path="/configuracoes" element={<Configuracoes />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={['SUPERADMIN', 'TECNOLOGO', 'ADMIN', 'MEDICO']} />}>
           <Route path="/worklist" element={<WorklistTecnologo />} />
         </Route>
 
-        <Route element={<ProtectedRoute allowedRoles={['SUPERADMIN', 'MEDICO', 'ADMIN']} />}>
+        <Route element={<ProtectedRoute allowedRoles={['SUPERADMIN', 'MEDICO', 'ADMIN', 'TECNOLOGO']} />}>
           <Route path="/worklist-medico" element={<WorklistMedico />} />
           <Route path="/workspace/:id" element={<WorkspaceMedico />} />
         </Route>

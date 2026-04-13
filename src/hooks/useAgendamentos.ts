@@ -11,8 +11,18 @@ export function useAgendamentos(page = 0, size = 10) {
   return useQuery({
     queryKey: [...AGENDAMENTOS_KEY, page, size],
     queryFn: async () => {
-      const response = await api.get<ApiResponse<AgendamentoPage>>(`/agendamentos?page=${page}&size=${size}`);
-      return response.data.data;
+      const response = await api.get<ApiResponse<any>>(`/agendamentos?page=${page}&size=${size}`);
+      const raw = response.data.data;
+
+      // Spring Boot 3.3+ mudou a estrutura: { content, page: { number, totalPages, ... } }
+      // Normalizamos para o formato que o frontend espera: { content, number, totalPages, ... }
+      return {
+        content: raw.content,
+        number: raw.page?.number ?? raw.number ?? 0,
+        totalPages: raw.page?.totalPages ?? raw.totalPages ?? 1,
+        totalElements: raw.page?.totalElements ?? raw.totalElements ?? 0,
+        size: raw.page?.size ?? raw.size ?? size,
+      } as AgendamentoPage;
     },
   });
 }

@@ -1,6 +1,6 @@
 import { Page } from './unidade';
 
-export type StatusAgendamento = 'AGENDADO' | 'EM_ATENDIMENTO' | 'EXECUTANDO' | 'REALIZADO' | 'CANCELADO';
+export type StatusAgendamento = 'AGENDADO' | 'EM_ATENDIMENTO' | 'EXECUTANDO' | 'REALIZADO' | 'LAUDADO' | 'CANCELADO';
 
 export interface AgendamentoRequest {
   pacienteId: string;
@@ -27,6 +27,7 @@ export interface AgendamentoResponse {
   duracaoEstimadaMinutos: number;
   accessionNumber: string; // Gerado pelo Back para o DICOM
   prioridade?: 'NORMAL' | 'URGENTE';
+  medicoNome?: string;
 }
 
 export type AgendamentoPage = Page<AgendamentoResponse>;

@@ -76,7 +76,7 @@ export function MainNav() {
         />
       </RoleGuard>
 
-      <RoleGuard allowedRoles={['SUPERADMIN', 'MEDICO', 'ADMIN']}>
+      <RoleGuard allowedRoles={['SUPERADMIN', 'MEDICO', 'ADMIN', 'TECNOLOGO']}>
         <NavItem 
           to="/worklist-medico" 
           label="Laudos" 
@@ -88,7 +88,7 @@ export function MainNav() {
         <div className="relative group">
           <button className={cn(
             "flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-tight transition-all rounded-md",
-            ["/unidades", "/salas", "/equipamentos"].includes(location.pathname)
+            ["/unidades", "/salas", "/equipamentos", "/configuracoes"].includes(location.pathname)
               ? "bg-muted text-foreground"
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
           )}>
@@ -100,6 +100,8 @@ export function MainNav() {
             <Link to="/unidades" className="block px-4 py-2 text-xs font-bold uppercase text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Unidades</Link>
             <Link to="/salas" className="block px-4 py-2 text-xs font-bold uppercase text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Salas</Link>
             <Link to="/equipamentos" className="block px-4 py-2 text-xs font-bold uppercase text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Equipamentos</Link>
+            <div className="h-px bg-border mx-2 my-1" />
+            <Link to="/configuracoes" className="block px-4 py-2 text-xs font-bold uppercase text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Templates & Frases</Link>
           </div>
         </div>
       </RoleGuard>
