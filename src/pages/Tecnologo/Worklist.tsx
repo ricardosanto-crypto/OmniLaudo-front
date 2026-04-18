@@ -56,9 +56,11 @@ export function WorklistTecnologo() {
   const handleAvancarFluxo = (id: string, statusAtual: StatusAgendamento) => {
     let proximoStatus: StatusAgendamento | null = null;
 
-    if (statusAtual === 'AGENDADO') proximoStatus = 'EM_ATENDIMENTO';
-    else if (statusAtual === 'EM_ATENDIMENTO') proximoStatus = 'EXECUTANDO';
-    else if (statusAtual === 'EXECUTANDO') proximoStatus = 'REALIZADO';
+    if (statusAtual === 'AGENDADO') proximoStatus = 'AGUARDANDO_ATENDIMENTO';
+    else if (statusAtual === 'AGUARDANDO_ATENDIMENTO') proximoStatus = 'EM_ATENDIMENTO';
+    else if (statusAtual === 'EM_ATENDIMENTO') proximoStatus = 'AGUARDANDO_LAUDO';
+    else if (statusAtual === 'AGUARDANDO_LAUDO') proximoStatus = 'LAUDADO'; 
+    else if (statusAtual === 'LAUDADO') proximoStatus = 'LAUDO_FINALIZADO';
 
     if (proximoStatus) {
       updateStatus({ id, status: proximoStatus });
@@ -108,7 +110,7 @@ export function WorklistTecnologo() {
               <UserCheck size={14} className="mr-2" /> Check-in
             </Button>
           )}
-          {i.status === 'EM_ATENDIMENTO' && (
+          {i.status === 'AGUARDANDO_ATENDIMENTO' && (
             <Button 
                 size="sm" 
                 className="bg-blue-600 hover:bg-blue-700 text-white" 
@@ -117,31 +119,24 @@ export function WorklistTecnologo() {
               <Play size={14} className="mr-2" /> Iniciar Exame
             </Button>
           )}
-          {i.status === 'EXECUTANDO' && (
-            <Button 
-                size="sm" 
-                className="bg-green-600 hover:bg-green-700 text-white" 
-                onClick={() => handleAvancarFluxo(i.id, i.status)}
-            >
-              <CheckCircle size={14} className="mr-2" /> Finalizar
-            </Button>
-          )}
-          {(i.status === 'EM_ATENDIMENTO' || i.status === 'EXECUTANDO') && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
-              onClick={() => openUploadDialog(i)}
-            >
-              <UploadCloud size={14} className="mr-2" /> Upload
-            </Button>
-          )}
-          {i.status === 'REALIZADO' && (
-            <Link to={`/workspace/${i.id}`}>
-              <Button size="sm" className="bg-slate-900 hover:bg-slate-800 text-white shadow-lg">
-                <Activity size={14} className="mr-2" /> Laudar
+          {(i.status === 'EM_ATENDIMENTO') && (  
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                onClick={() => openUploadDialog(i)}
+              >
+                <UploadCloud size={14} className="mr-2" /> Upload
               </Button>
-            </Link>
+              <Button 
+                size="sm" 
+                className="bg-blue-600 hover:bg-blue-700 text-white" 
+                onClick={() => handleAvancarFluxo(i.id, i.status)}
+              >
+                <Play size={14} className="mr-2" /> Finalizar Exame
+              </Button>
+            </>
           )}
         </div>
       )

@@ -147,12 +147,11 @@ O exame percorre os seguintes estados, garantindo rastreabilidade total:
 | Estado | Descrição |
 |--------|-----------|
 | **AGENDADO** | Exame agendado, aguardando check‑in |
+| **AGUARDANDO_ATENDIMENTO** | Paciente aguardando sua vez para ser chamado |
 | **EM_ATENDIMENTO** | Paciente confirmado, exame liberado para execução |
-| **REALIZADO** | Exame executado, imagens enviadas ao PACS |
 | **AGUARDANDO_LAUDO** | Imagens disponíveis, laudo ainda não iniciado |
-| **LAUDANDO** | Radiologista em edição do laudo (rascunho) |
-| **AGUARDANDO_ASSINATURA_TECNICA** | Laudo aguardando confirmação do técnico (se exigido) |
-| **LAUDO_FINALIZADO** | Laudo assinado pelo técnico e pelo médico, disponível para entrega |
+| **LAUDADO** | Radiologista conclui laudo 
+| **LAUDO_ASSINADO** | Laudo assinado pelo técnico e pelo médico, disponível para entrega |
 
 ---
 
