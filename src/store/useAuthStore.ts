@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AuthUser } from '../types/auth';
+import { queryClient } from '../lib/queryClient';
 
 interface AuthState {
     token: string | null;
@@ -24,8 +25,7 @@ export const useAuthStore = create<AuthState>()(
 
             logout: () => {
                 set({ token: null, user: null, isAuthenticated: false });
-                // Opcional: limpar outros caches, como o do TanStack Query,
-                // mas faremos isso em nível de componente/rota.
+                queryClient.clear();
             },
 
             hasRole: (role) => {
