@@ -15,9 +15,9 @@ import { WorklistMedico } from './pages/Medico/Worklist';
 import { WorkspaceMedico } from './pages/Medico/Workspace';
 import { Configuracoes } from './pages/Configuracoes';
 import { cn } from './lib/utils';
-import { 
-  Users, 
-  Calendar, 
+import {
+  Users,
+  Calendar,
   Clock,
   CheckCircle
 } from 'lucide-react';
@@ -29,7 +29,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 function Dashboard() {
   const { data: stats, isLoading } = useDashboardStats();
   const { hasRole } = useAuthStore();
-  
+
   const isMedico = hasRole('MEDICO');
   const isTecnologo = hasRole('TECNOLOGO');
 
@@ -65,13 +65,13 @@ function Dashboard() {
             </h1>
           </div>
         </div>
-        
+
         {/* Cards principais orientados à ação */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
             className="bg-card rounded-xl border border-border p-5 relative overflow-hidden group shadow-sm">
             <div className="flex justify-between items-start mb-3">
-               <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500"><Users className="h-4 w-4" /></div>
+              <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500"><Users className="h-4 w-4" /></div>
             </div>
             <div>
               <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1">Total de Agendamentos (Hoje)</p>
@@ -82,18 +82,18 @@ function Dashboard() {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
             className="bg-card rounded-xl border border-border p-5 relative overflow-hidden group shadow-sm">
             <div className="flex justify-between items-start mb-3">
-               <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500"><Clock className="h-4 w-4" /></div>
+              <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500"><Clock className="h-4 w-4" /></div>
             </div>
             <div>
               <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1">Backlog / Fila de Exames</p>
               <p className="text-2xl font-bold text-foreground tracking-tight">{isMedico ? currentStats.backlogLaudos : currentStats.examesEmEspera}</p>
             </div>
           </motion.div>
-          
+
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
             className="bg-card rounded-xl border border-border p-5 relative overflow-hidden group shadow-sm">
             <div className="flex justify-between items-start mb-3">
-               <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500"><CheckCircle className="h-4 w-4" /></div>
+              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500"><CheckCircle className="h-4 w-4" /></div>
             </div>
             <div>
               <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1">Laudados (Hoje)</p>
@@ -104,7 +104,7 @@ function Dashboard() {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
             className="bg-card rounded-xl border border-border p-5 relative overflow-hidden group shadow-sm">
             <div className="flex justify-between items-start mb-3">
-               <div className="p-2 rounded-lg bg-red-500/10 text-red-500"><Calendar className="h-4 w-4" /></div>
+              <div className="p-2 rounded-lg bg-red-500/10 text-red-500"><Calendar className="h-4 w-4" /></div>
             </div>
             <div>
               <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1">Cancelamentos e Remarcações</p>
@@ -124,7 +124,7 @@ function Dashboard() {
                   <p className="text-[10px] text-slate-500 font-medium">Agendados vs Realizados (Com Laudo Solicitado ou Finalizado)</p>
                 </div>
               </div>
-              
+
               {currentStats.historicoSemanal.length === 0 || currentStats.historicoSemanal.every(d => d.agendados === 0 && d.realizados === 0) ? (
                 <div className="flex flex-col items-center justify-center py-12 px-4 h-[320px] bg-slate-50/50 dark:bg-slate-900/20 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
                   <div className="text-slate-300 dark:text-slate-700 mb-3"><Calendar className="h-12 w-12" /></div>
@@ -134,13 +134,13 @@ function Dashboard() {
                 <ResponsiveContainer width="100%" height={320}>
                   <BarChart data={currentStats.historicoSemanal} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
-                    <XAxis dataKey="data" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} dy={10} 
-                           tickFormatter={(val) => {
-                              const date = new Date(val); // Ajuste formato YYYY-MM-DD
-                              return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}`;
-                           }} />
+                    <XAxis dataKey="data" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} dy={10}
+                      tickFormatter={(val) => {
+                        const date = new Date(val); // Ajuste formato YYYY-MM-DD
+                        return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+                      }} />
                     <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} />
-                    <Tooltip 
+                    <Tooltip
                       contentStyle={{ backgroundColor: '#0e111a', border: '1px solid #ffffff10', borderRadius: '12px' }}
                       itemStyle={{ fontSize: '10px', fontWeight: 600 }}
                     />
@@ -149,7 +149,7 @@ function Dashboard() {
                   </BarChart>
                 </ResponsiveContainer>
               )}
-              
+
               <div className="flex justify-center gap-6 mt-6">
                 <div className="flex items-center gap-2">
                   <div className="h-2.5 w-2.5 rounded-full bg-blue-600" />
@@ -207,7 +207,7 @@ function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      
+
       {/* O Toaster fica na raiz, visível em todas as rotas */}
       <Toaster position="top-right" richColors closeButton />
     </QueryClientProvider>
