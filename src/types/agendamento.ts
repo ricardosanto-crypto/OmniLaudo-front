@@ -1,6 +1,11 @@
 import { Page } from './unidade';
 
-export type StatusAgendamento = 'AGENDADO' | 'AGUARDANDO_ATENDIMENTO' | 'EM_ATENDIMENTO' | 'AGUARDANDO_LAUDO' | 'LAUDADO' | 'AGUARDANDO_ASSINATURA_TECNICA' | 'LAUDO_FINALIZADO' | 'CANCELADO';
+export type StatusAgendamento = 
+  | 'AGENDADO'
+  | 'EM_ATENDIMENTO'
+  | 'AGUARDANDO_LAUDO'
+  | 'LAUDADO'
+  | 'CANCELADO';
 
 export interface AgendamentoRequest {
   pacienteId: string;

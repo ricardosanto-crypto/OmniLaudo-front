@@ -9,6 +9,7 @@ export interface EquipamentoRequest {
   salaId?: string;
   dicomHabilitado: boolean;
   dicomAeTitle?: string;
+  dicomIp?: string;
   dicomPort?: number;
   emManutencao: boolean;
   calibrado: boolean;

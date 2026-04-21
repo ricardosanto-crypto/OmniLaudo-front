@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Users, Plus, Search, FileText } from 'lucide-react';
-import { usePacientes, useCreatePaciente } from '../../hooks/usePacientes';
+import { Users, Plus, Search, FileText, Edit, Trash2 } from 'lucide-react';
+import { usePacientes, useCreatePaciente, useUpdatePaciente, useDeletePaciente } from '../../hooks/usePacientes';
 import { DataTable, ColumnDef } from '../../components/ui/data-table';
 import { PacienteResponse } from '../../types/paciente';
 import { PacienteForm } from './PacienteForm';
@@ -13,9 +13,33 @@ export function Pacientes() {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingPaciente, setEditingPaciente] = useState<PacienteResponse | null>(null);
 
   const { data: pagePacientes, isLoading, isError, error } = usePacientes(page, 10, search);
   const { mutate: criar, isPending: isCreating } = useCreatePaciente();
+  const { mutate: atualizar, isPending: isUpdating } = useUpdatePaciente();
+  const { mutate: inativar } = useDeletePaciente();
+
+  const handleEdit = (paciente: PacienteResponse) => {
+    // Format date from array/iso to YYYY-MM-DD for the date input
+    const dataFmt = typeof paciente.dataNascimento === 'string' 
+      ? paciente.dataNascimento.split('T')[0] 
+      : Array.isArray(paciente.dataNascimento) 
+        ? `${paciente.dataNascimento[0]}-${String(paciente.dataNascimento[1]).padStart(2,'0')}-${String(paciente.dataNascimento[2]).padStart(2,'0')}`
+        : '';
+        
+    setEditingPaciente({
+      ...paciente,
+      dataNascimento: dataFmt
+    } as any);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (window.confirm("Deseja realmente inativar este paciente? Ele não aparecerá mais para novos agendamentos.")) {
+      inativar(id);
+    }
+  };
 
   const columns: ColumnDef<PacienteResponse>[] = [
     { 
@@ -29,11 +53,15 @@ export function Pacientes() {
     {
       header: <span className="sr-only">Ações</span>,
       className: 'text-right',
-      cell: (_i) => (
-        <Button variant="ghost" size="sm" className="text-primary-500 hover:text-primary-700 hover:bg-primary-50">
-          <FileText size={16} className="mr-2" /> 
-          Ver Ficha
-        </Button>
+      cell: (i) => (
+        <div className="flex justify-end gap-1">
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50" onClick={() => handleEdit(i)}>
+            <Edit size={16} />
+          </Button>
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete(i.id)}>
+            <Trash2 size={16} />
+          </Button>
+        </div>
       )
     }
   ];
@@ -51,7 +79,10 @@ export function Pacientes() {
       backLink={{ label: 'Voltar ao Dashboard', to: '/' }}
       actions={
         <Button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            setEditingPaciente(null);
+            setIsModalOpen(true);
+          }}
           className="bg-primary-500 hover:bg-primary-600 text-white"
         >
           <Plus size={18} className="mr-2" />
@@ -90,15 +121,25 @@ export function Pacientes() {
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent className="sm:max-w-[550px]">
             <DialogHeader>
-              <DialogTitle>Cadastrar Novo Paciente</DialogTitle>
+              <DialogTitle>{editingPaciente ? 'Editar Paciente' : 'Cadastrar Novo Paciente'}</DialogTitle>
               <DialogDescription>
                 Preencha os dados básicos do paciente. Campos como Convênio e E-mail são opcionais.
               </DialogDescription>
             </DialogHeader>
             <PacienteForm
-              isLoading={isCreating}
-              onCancel={() => setIsModalOpen(false)}
-              onSubmit={(data: any) => criar(data, { onSuccess: () => setIsModalOpen(false) })}
+              initialData={editingPaciente}
+              isLoading={isCreating || isUpdating}
+              onCancel={() => {
+                setIsModalOpen(false);
+                setEditingPaciente(null);
+              }}
+              onSubmit={(data: any) => {
+                if (editingPaciente) {
+                  atualizar({ id: editingPaciente.id, data }, { onSuccess: () => setIsModalOpen(false) });
+                } else {
+                  criar(data, { onSuccess: () => setIsModalOpen(false) });
+                }
+              }}
             />
           </DialogContent>
         </Dialog>

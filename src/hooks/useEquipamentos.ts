@@ -22,9 +22,14 @@ export function useCreateEquipamento() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: EquipamentoRequest) => api.post('/equipamentos', data),
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: EQUIP_QUERY_KEY });
-      toast.success(MESSAGES.SUCCESS.SAVED);
+      const apiResponse = response.data;
+      if (apiResponse.type === 'warn') {
+        toast.warning(apiResponse.message);
+      } else {
+        toast.success(MESSAGES.SUCCESS.SAVED);
+      }
     },
     onError: (error: any) => {
       const message = error?.response?.data?.message || 'Erro ao criar equipamento';
@@ -38,12 +43,32 @@ export function useUpdateEquipamento() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: EquipamentoRequest }) => 
       api.put(`/equipamentos/${id}`, data),
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: EQUIP_QUERY_KEY });
-      toast.success(MESSAGES.SUCCESS.SAVED);
+      const apiResponse = response.data;
+      if (apiResponse.type === 'warn') {
+        toast.warning(apiResponse.message);
+      } else {
+        toast.success(MESSAGES.SUCCESS.SAVED);
+      }
     },
     onError: (error: any) => {
       const message = error?.response?.data?.message || 'Erro ao salvar equipamento';
+      toast.error(message);
+    },
+  });
+}
+
+export function useDeleteEquipamento() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete(`/equipamentos/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: EQUIP_QUERY_KEY });
+      toast.success(MESSAGES.SUCCESS.DELETED);
+    },
+    onError: (error: any) => {
+      const message = error?.response?.data?.message || 'Erro ao deletar equipamento';
       toast.error(message);
     },
   });

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Plus, Edit } from 'lucide-react';
-import { useEquipamentos, useCreateEquipamento, useUpdateEquipamento } from '../../hooks/useEquipamentos';
+import { Plus, Edit, Trash2 } from 'lucide-react';
+import { useEquipamentos, useCreateEquipamento, useUpdateEquipamento, useDeleteEquipamento } from '../../hooks/useEquipamentos';
 import { DataTable, ColumnDef } from '../../components/ui/data-table';
 import { EquipamentoResponse } from '../../types/equipamento';
 import { EquipamentoForm } from './EquipamentoForm';
@@ -17,6 +17,7 @@ export function Equipamentos() {
   const { data: pageEquip, isLoading, isError, error } = useEquipamentos(page, 10);
   const { mutate: criar, isPending: isCreating } = useCreateEquipamento();
   const { mutate: atualizar, isPending: isUpdating } = useUpdateEquipamento();
+  const { mutate: inativar } = useDeleteEquipamento();
 
   const handleEdit = (equip: EquipamentoResponse) => {
     setEquipEmEdicao({
@@ -24,6 +25,12 @@ export function Equipamentos() {
       salaId: equip.salaId ? String(equip.salaId) : undefined
     });
     setIsModalOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (window.confirm("Deseja realmente inativar este equipamento? Isso o removerá na lista de agendamentos e sua modalidade do PACS.")) {
+      inativar(id);
+    }
   };
 
   const columns: ColumnDef<EquipamentoResponse>[] = [
@@ -49,14 +56,24 @@ export function Equipamentos() {
       className: 'text-right',
       cell: (i) => (
         <RoleGuard allowedRoles={['SUPERADMIN', 'ADMIN']}>
-          <button 
-            className="text-primary-500 hover:bg-gray-100 p-2 rounded transition-colors" 
-            title="Editar"
-            onClick={() => handleEdit(i)}
-          >
-            <span className="sr-only">Editar equipamento</span>
-            <Edit size={16} />
-          </button>
+          <div className="flex justify-end gap-1">
+            <button 
+              className="text-blue-600 hover:bg-blue-50 p-2 rounded transition-colors" 
+              title="Editar"
+              onClick={() => handleEdit(i)}
+            >
+              <span className="sr-only">Editar equipamento</span>
+              <Edit size={16} />
+            </button>
+            <button 
+              className="text-red-600 hover:bg-red-50 p-2 rounded transition-colors" 
+              title="Inativar"
+              onClick={() => handleDelete(i.id)}
+            >
+              <span className="sr-only">Inativar equipamento</span>
+              <Trash2 size={16} />
+            </button>
+          </div>
         </RoleGuard>
       )
     }

@@ -16,6 +16,7 @@ const equipamentoSchema = z.object({
   salaId: z.string().optional(),
   dicomHabilitado: z.boolean().default(false),
   dicomAeTitle: z.string().optional(),
+  dicomIp: z.string().optional(),
   dicomPort: z.coerce.number().optional(),
   emManutencao: z.boolean().default(false),
   calibrado: z.boolean().default(false),
@@ -36,6 +37,7 @@ export function EquipamentoForm({ initialData, onSubmit, isLoading, onCancel }: 
       salaId: '',
       dicomHabilitado: false,
       dicomAeTitle: '',
+      dicomIp: '',
       dicomPort: undefined,
       emManutencao: false,
       calibrado: false,
@@ -54,6 +56,7 @@ export function EquipamentoForm({ initialData, onSubmit, isLoading, onCancel }: 
         salaId: initialData.salaId ? String(initialData.salaId) : '',
         dicomHabilitado: initialData.dicomHabilitado || false,
         dicomAeTitle: initialData.dicomAeTitle || '',
+        dicomIp: initialData.dicomIp || '',
         dicomPort: initialData.dicomPort || undefined,
         emManutencao: initialData.emManutencao || false,
         calibrado: initialData.calibrado || false,
@@ -152,13 +155,17 @@ export function EquipamentoForm({ initialData, onSubmit, isLoading, onCancel }: 
 
       <div className="border-t pt-4">
         <h3 className="text-sm font-bold mb-2">Configurações DICOM</h3>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">AE Title</label>
             <Input {...register('dicomAeTitle')} placeholder="OMNILA_MRI_01" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Porta DICOM</label>
+            <label className="text-sm font-medium">Endereço IP</label>
+            <Input {...register('dicomIp')} placeholder="Ex: 192.168.1.50" />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Porta</label>
             <Input type="number" {...register('dicomPort')} placeholder="104" />
           </div>
         </div>

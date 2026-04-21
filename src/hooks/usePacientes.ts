@@ -28,3 +28,26 @@ export function useCreatePaciente() {
     },
   });
 }
+
+export function useUpdatePaciente() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: PacienteRequest }) => 
+      api.put(`/pacientes/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PACIENTES_QUERY_KEY });
+      toast.success(MESSAGES.SUCCESS.SAVED);
+    },
+  });
+}
+
+export function useDeletePaciente() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete(`/pacientes/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PACIENTES_QUERY_KEY });
+      toast.success(MESSAGES.SUCCESS.DELETED);
+    },
+  });
+}

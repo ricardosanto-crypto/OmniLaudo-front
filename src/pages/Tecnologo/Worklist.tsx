@@ -19,15 +19,13 @@ export function WorklistTecnologo() {
   const { mutate: updateStatus } = useUpdateAgendamentoStatus();
   const { mutate: uploadDicom, isPending: isUploading } = useUploadDicom();
 
-  const openUploadDialog = (agendamento: AgendamentoResponse) => {
-    setSelectedAgendamento(agendamento);
+  const openUploadDialog = () => {
     setSelectedFiles([]);
     setIsDialogOpen(true);
   };
 
   const closeUploadDialog = () => {
     setIsDialogOpen(false);
-    setSelectedAgendamento(null);
     setSelectedFiles([]);
   };
 
@@ -38,15 +36,9 @@ export function WorklistTecnologo() {
   };
 
   const submitUpload = () => {
-    if (!selectedAgendamento || selectedFiles.length === 0) return;
+    if (selectedFiles.length === 0) return;
 
     uploadDicom({
-      accessionNumber: selectedAgendamento.accessionNumber,
-      patientId: selectedAgendamento.pacienteId,
-      patientName: selectedAgendamento.pacienteNome,
-      examType: selectedAgendamento.procedimentoNome,
-      modality: selectedAgendamento.equipamentoModalidade,
-      description: selectedAgendamento.procedimentoNome,
       files: selectedFiles,
     });
     closeUploadDialog();
@@ -56,11 +48,8 @@ export function WorklistTecnologo() {
   const handleAvancarFluxo = (id: string, statusAtual: StatusAgendamento) => {
     let proximoStatus: StatusAgendamento | null = null;
 
-    if (statusAtual === 'AGENDADO') proximoStatus = 'AGUARDANDO_ATENDIMENTO';
-    else if (statusAtual === 'AGUARDANDO_ATENDIMENTO') proximoStatus = 'EM_ATENDIMENTO';
+    if (statusAtual === 'AGENDADO') proximoStatus = 'EM_ATENDIMENTO';
     else if (statusAtual === 'EM_ATENDIMENTO') proximoStatus = 'AGUARDANDO_LAUDO';
-    else if (statusAtual === 'AGUARDANDO_LAUDO') proximoStatus = 'LAUDADO'; 
-    else if (statusAtual === 'LAUDADO') proximoStatus = 'LAUDO_FINALIZADO';
 
     if (proximoStatus) {
       updateStatus({ id, status: proximoStatus });
@@ -73,9 +62,9 @@ export function WorklistTecnologo() {
       cell: (i) => {
         const styles: Record<string, string> = {
           AGENDADO: "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700",
-          EM_ATENDIMENTO: "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50",
-          EXECUTANDO: "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/50 animate-pulse",
-          REALIZADO: "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800/50",
+          EM_ATENDIMENTO: "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/50",
+          AGUARDANDO_LAUDO: "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50",
+          LAUDADO: "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800/50",
           CANCELADO: "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800/50",
         };
         return (
@@ -110,31 +99,14 @@ export function WorklistTecnologo() {
               <UserCheck size={14} className="mr-2" /> Check-in
             </Button>
           )}
-          {i.status === 'AGUARDANDO_ATENDIMENTO' && (
-            <Button 
-                size="sm" 
-                className="bg-blue-600 hover:bg-blue-700 text-white" 
-                onClick={() => handleAvancarFluxo(i.id, i.status)}
-            >
-              <Play size={14} className="mr-2" /> Iniciar Exame
-            </Button>
-          )}
           {(i.status === 'EM_ATENDIMENTO') && (  
             <>
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
-                onClick={() => openUploadDialog(i)}
-              >
-                <UploadCloud size={14} className="mr-2" /> Upload
-              </Button>
               <Button 
                 size="sm" 
                 className="bg-blue-600 hover:bg-blue-700 text-white" 
                 onClick={() => handleAvancarFluxo(i.id, i.status)}
               >
-                <Play size={14} className="mr-2" /> Finalizar Exame
+                <CheckCircle size={14} className="mr-2" /> Exame Pronto
               </Button>
             </>
           )}
@@ -170,6 +142,12 @@ export function WorklistTecnologo() {
               <Input placeholder="Buscar paciente na fila..." className="pl-10 dark:bg-slate-900 dark:border-slate-800" />
           </div>
           <Button variant="outline" className="dark:border-slate-800 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-400">Filtrar por Sala</Button>
+          <Button 
+            className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+            onClick={openUploadDialog}
+          >
+            <UploadCloud size={18} className="mr-2" /> DICOM Dropzone
+          </Button>
         </div>
 
         <DataTable 
@@ -184,22 +162,13 @@ export function WorklistTecnologo() {
         <Dialog open={isDialogOpen} onOpenChange={(open) => { if (!open) closeUploadDialog(); setIsDialogOpen(open); }}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Upload de DICOM</DialogTitle>
+              <DialogTitle>DICOM Dropzone (Sem Vínculo Manual)</DialogTitle>
               <DialogDescription>
-                Faça upload do arquivo DICOM real para o exame selecionado e envie para o Orthanc.
+                Arraste ou selecione os arquivos do CD-ROM do paciente. O Orthanc fará a leitura nativa dos metadados e nosso motor de Inteligência irá conectá-los automaticamente ao agendamento correto baseado no Accession Number ou Patient ID.
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 mt-4">
-              <div className="grid gap-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Paciente</label>
-                <p className="text-base text-slate-900 dark:text-white">{selectedAgendamento?.pacienteNome || 'Nenhum paciente selecionado'}</p>
-              </div>
-
-              <div className="grid gap-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Accession Number</label>
-                <p className="text-sm text-slate-700 dark:text-slate-400 font-mono">{selectedAgendamento?.accessionNumber || '-'}</p>
-              </div>
 
               <div className="grid gap-2">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="dicom-file">

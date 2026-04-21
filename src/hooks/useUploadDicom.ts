@@ -4,12 +4,6 @@ import { api } from '../services/api';
 import { AGENDAMENTOS_KEY } from './useAgendamentos';
 
 export interface UploadDicomPayload {
-  accessionNumber: string;
-  patientId: string;
-  patientName: string;
-  examType?: string;
-  modality?: string;
-  description?: string;
   files: File[];
 }
 

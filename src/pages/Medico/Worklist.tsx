@@ -131,12 +131,12 @@ export function WorklistMedico() {
   const [page, setPage] = useState(0);
   const { data: pageAgend, isLoading } = useAgendamentos(page, 10);
 
-  // Filtra exames realizados (prontos para laudo) e laudados (para revisão/visualização)
+  // Filtra exames aguardando laudo e laudados (para revisão/visualização)
   const examesParaLaudar = pageAgend?.content.filter(
-    i => ['REALIZADO', 'LAUDADO'].includes(i.status)
+    i => ['AGUARDANDO_LAUDO', 'LAUDADO'].includes(i.status)
   ) || [];
 
-  const pendentes = examesParaLaudar.filter(i => i.status === 'REALIZADO').length;
+  const pendentes = examesParaLaudar.filter(i => i.status === 'AGUARDANDO_LAUDO').length;
   const laudados = examesParaLaudar.filter(i => i.status === 'LAUDADO').length;
 
   const columns: ColumnDef<AgendamentoResponse>[] = [
@@ -144,10 +144,10 @@ export function WorklistMedico() {
       header: 'Status',
       cell: (i) => {
         const styles: Record<string, { bg: string; label: string }> = {
-          REALIZADO: { bg: 'bg-amber-500/10 text-amber-500 border-amber-500/20', label: '● Aguardando Laudo' },
+          AGUARDANDO_LAUDO: { bg: 'bg-amber-500/10 text-amber-500 border-amber-500/20', label: '● Aguardando Laudo' },
           LAUDADO: { bg: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20', label: '✓ Laudado' },
         };
-        const style = styles[i.status] || styles.REALIZADO;
+        const style = styles[i.status] || styles.AGUARDANDO_LAUDO;
         return (
           <span className={cn("px-2 py-1 rounded-full text-[10px] font-bold border", style.bg)}>
             {style.label}
@@ -187,7 +187,7 @@ export function WorklistMedico() {
       className: 'text-right',
       cell: (i) => (
         <Link to={`/workspace/${i.id}`}>
-          {i.status === 'REALIZADO' ? (
+          {i.status === 'AGUARDANDO_LAUDO' ? (
             <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white shadow-md group">
               <FileText size={14} className="mr-2 group-hover:scale-110 transition-transform" />
               Laudar
