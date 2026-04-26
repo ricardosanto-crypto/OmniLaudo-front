@@ -1,30 +1,22 @@
 import { QueryClient, QueryCache, MutationCache } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ApiResponse } from '../types/api';
+import { FormValidationError } from '../services/errorHandler';
 
-// Função utilitária para ler o contrato do seu Spring Boot e disparar o Toast correto
 const handleGlobalFeedback = (payload: unknown, isError: boolean = false) => {
-  // Fazemos o cast (seguro pois nosso Axios interceptor garante esse formato)
+  // Se for erro de formulário, ignora. A função applyFormErrors do componente cuida disso.
+  if (payload instanceof FormValidationError) return;
+
   const response = payload as ApiResponse<unknown>;
 
-  if (response && response.message) {
+  if (response && response.message && !isError) {
+    // Apenas mensagens de sucesso passam por aqui automaticamente
     switch (response.type) {
-      case 'success':
-        toast.success(response.message);
-        break;
-      case 'warn':
-        toast.warning(response.message);
-        break;
-      case 'error':
-        toast.error(response.message);
-        break;
-      default:
-        // Fallback caso o backend não mande o 'type' mas mande a mensagem
-        isError ? toast.error(response.message) : toast.info(response.message);
+      case 'success': toast.success(response.message); break;
+      case 'warn': toast.warning(response.message); break;
+      case 'error': toast.error(response.message); break;
+      default: toast.info(response.message);
     }
-  } else if (isError) {
-    // Fallback extremo para erros não tratados/rede
-    toast.error('Ocorreu um erro inesperado de comunicação.');
   }
 };
 
@@ -36,13 +28,11 @@ export const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000,
     },
   },
-  // Captura global de erros em consultas (GET)
   queryCache: new QueryCache({
-    onError: (error) => handleGlobalFeedback(error, true),
+    // Os erros (GET) já são tratados no interceptor do Axios via handleApiError
   }),
-  // Captura global de SUCESSO e ERRO em mutações (POST, PUT, DELETE)
   mutationCache: new MutationCache({
     onSuccess: (data) => handleGlobalFeedback(data, false),
-    onError: (error) => handleGlobalFeedback(error, true),
+    // Os erros (POST/PUT/DELETE) já são tratados no interceptor do Axios
   }),
 });

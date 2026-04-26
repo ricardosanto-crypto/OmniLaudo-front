@@ -3,7 +3,6 @@ import { api } from '../services/api';
 import { ApiResponse } from '../types/api';
 import { ProcedimentoResponse } from '../types/procedimento';
 
-
 export const PROCEDIMENTOS_QUERY_KEY = ['procedimentos'];
 
 // Dados mockados para modalidades enquanto o backend não retorna dados
@@ -40,14 +39,12 @@ const PROCEDIMENTOS_MOCK: Record<string, ProcedimentoResponse[]> = {
 export function useProcedimentos() {
   return useQuery({
     queryKey: [...PROCEDIMENTOS_QUERY_KEY, 'todos'],
-    queryFn: async () => {
+    queryFn: async (): Promise<ProcedimentoResponse[]> => {
       try {
-        const response = await api.get<ApiResponse<ProcedimentoResponse[]> | ProcedimentoResponse[]>('/procedimentos/todos');
-        const data = Array.isArray(response.data) ? response.data : response.data?.data;
-        return Array.isArray(data) ? data : [];
-      } catch (error: any) {
+        const response = await api.get<ApiResponse<ProcedimentoResponse[]>>('/procedimentos/todos');
+        return response.data.data || [];
+      } catch (error) {
         console.warn('Erro ao carregar procedimentos da API, usando dados mockados:', error);
-        // Retorna todos os procedimentos mockados
         return Object.values(PROCEDIMENTOS_MOCK).flat();
       }
     },
@@ -62,15 +59,13 @@ export function useProcedimentos() {
 export function useProcedimentosByModalidade(modalidade?: string) {
   return useQuery({
     queryKey: [...PROCEDIMENTOS_QUERY_KEY, 'modalidade', modalidade],
-    queryFn: async () => {
+    queryFn: async (): Promise<ProcedimentoResponse[]> => {
       if (!modalidade) return [];
       try {
-        const response = await api.get<ApiResponse<ProcedimentoResponse[]> | ProcedimentoResponse[]>(`/procedimentos/modalidade/${modalidade}`);
-        const data = Array.isArray(response.data) ? response.data : response.data?.data;
-        return Array.isArray(data) ? data : [];
-      } catch (error: any) {
+        const response = await api.get<ApiResponse<ProcedimentoResponse[]>>(`/procedimentos/modalidade/${modalidade}`);
+        return response.data.data || [];
+      } catch (error) {
         console.warn(`Erro ao carregar procedimentos da modalidade ${modalidade}, usando dados mockados:`, error);
-        // Retorna procedimentos mockados para a modalidade
         return PROCEDIMENTOS_MOCK[modalidade] || [];
       }
     },
@@ -86,15 +81,10 @@ export function useProcedimentosByModalidade(modalidade?: string) {
 export function useProcedimentoById(id?: string) {
   return useQuery({
     queryKey: [...PROCEDIMENTOS_QUERY_KEY, 'id', id],
-    queryFn: async () => {
+    queryFn: async (): Promise<ProcedimentoResponse | null> => {
       if (!id) return null;
-      try {
-        const response = await api.get<ProcedimentoResponse>(`/procedimentos/${id}`);
-        return response.data;
-      } catch (error: any) {
-        console.error(`Erro ao carregar procedimento ${id}:`, error);
-        return null;
-      }
+      const response = await api.get<ApiResponse<ProcedimentoResponse>>(`/procedimentos/${id}`);
+      return response.data.data;
     },
     enabled: !!id,
     retry: 0,
@@ -108,15 +98,10 @@ export function useProcedimentoById(id?: string) {
 export function useProcedimentoByCodigo(codigo?: string) {
   return useQuery({
     queryKey: [...PROCEDIMENTOS_QUERY_KEY, 'codigo', codigo],
-    queryFn: async () => {
+    queryFn: async (): Promise<ProcedimentoResponse | null> => {
       if (!codigo) return null;
-      try {
-        const response = await api.get<ProcedimentoResponse>(`/procedimentos/codigo/${codigo}`);
-        return response.data;
-      } catch (error: any) {
-        console.error(`Erro ao carregar procedimento ${codigo}:`, error);
-        return null;
-      }
+      const response = await api.get<ApiResponse<ProcedimentoResponse>>(`/procedimentos/codigo/${codigo}`);
+      return response.data.data;
     },
     enabled: !!codigo,
     retry: 0,

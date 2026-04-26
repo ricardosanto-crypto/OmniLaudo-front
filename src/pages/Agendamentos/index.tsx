@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { KanbanSquare, List, Map, CalendarDays, Plus, XCircle } from 'lucide-react';
 import { useAgendamentos, useCreateAgendamento, useUpdateAgendamentoStatus } from '../../hooks/useAgendamentos';
 import { DataTable, ColumnDef } from '../../components/ui/data-table';
-import { AgendamentoResponse } from '../../types/agendamento';
+import { AgendamentoResponse, AgendamentoRequest } from '../../types/agendamento';
 import { AgendamentoForm } from './AgendamentoForm';
 import { KanbanBoard } from './KanbanBoard';
 import { DailyScheduler } from './DailyScheduler';
@@ -18,12 +18,12 @@ export function Agendamentos() {
   const [viewMode, setViewMode] = useState<'list' | 'kanban' | 'map'>('list');
 
   const { data: pageAgend, isLoading, isError, error } = useAgendamentos(page, 10);
-  const { mutate: criar, isPending: isCreating } = useCreateAgendamento();
-  const { mutate: cancelar } = useUpdateAgendamentoStatus();
+  const criar = useCreateAgendamento();
+  const cancelar = useUpdateAgendamentoStatus();
 
   const handleCancelar = (id: string) => {
     if (window.confirm("Você tem certeza que deseja cancelar este Agendamento? Isso não poderá ser desfeito.")) {
-      cancelar({ id, status: 'CANCELADO' });
+      cancelar.mutate({ id, status: 'CANCELADO' });
     }
   };
 
@@ -153,9 +153,12 @@ export function Agendamentos() {
               </DialogDescription>
             </DialogHeader>
             <AgendamentoForm
-              isLoading={isCreating}
+              isLoading={criar.isPending}
               onCancel={() => setIsModalOpen(false)}
-              onSubmit={(data: any) => criar(data, { onSuccess: () => setIsModalOpen(false) })}
+              onSubmit={async (data: AgendamentoRequest) => {
+                await criar.mutateAsync(data);
+                setIsModalOpen(false);
+              }}
             />
           </DialogContent>
         </Dialog>

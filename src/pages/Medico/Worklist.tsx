@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { FileText, Search, Activity, Eye, Download, ChevronDown } from 'lucide-react';
 import { useAgendamentos } from '@/hooks/useAgendamentos';
-import { useEstudoByAgendamento, useOrthancSeries } from '@/hooks/useDicom';
+import { useEstudoByAgendamento, useOrthancSeries, OrthancSeries } from '@/hooks/useDicom';
 import { api } from '@/services/api';
 import { toast } from 'sonner';
 import { DataTable, ColumnDef } from '@/components/ui/data-table';
@@ -65,7 +65,7 @@ function AgendamentoExpandido({ agendamento }: { agendamento: AgendamentoRespons
 
       {series && series.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {series.map((serie: any, idx: number) => (
+          {series.map((serie: OrthancSeries, idx: number) => (
             <div key={serie.id} className="bg-white dark:bg-slate-950 p-3 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-2">

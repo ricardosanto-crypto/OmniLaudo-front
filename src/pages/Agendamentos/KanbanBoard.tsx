@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Clock, CheckCircle, Activity, User, ArrowRight } from 'lucide-react';
+import { Clock, CheckCircle, Activity, User, ArrowRight, LucideIcon } from 'lucide-react';
 import { AgendamentoResponse, StatusAgendamento } from '../../types/agendamento';
 import { format } from 'date-fns';
 import { useUpdateAgendamentoStatus } from '../../hooks/useAgendamentos';
@@ -13,7 +13,7 @@ interface KanbanBoardProps {
 interface ColunaDef {
   id: StatusAgendamento;
   titulo: string;
-  icone: any;
+  icone: LucideIcon;
   corBase: string;
   nextStatus?: StatusAgendamento;
 }

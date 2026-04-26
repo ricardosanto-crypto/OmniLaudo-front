@@ -6,6 +6,9 @@ import { Input } from '../../components/ui/input';
 import { useSalas } from '../../hooks/useSalas';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { AcaoCrud } from '../../components/ui/acao-crud';
+import { applyFormErrors } from '../../services/errorHandler';
+
+import { EquipamentoResponse, EquipamentoRequest } from '../../types/equipamento';
 
 const equipamentoSchema = z.object({
   nome: z.string().min(1, 'Nome é obrigatório'),
@@ -14,20 +17,30 @@ const equipamentoSchema = z.object({
   modelo: z.string().optional(),
   numeroSerie: z.string().optional(),
   salaId: z.string().optional(),
-  dicomHabilitado: z.boolean().default(false),
+  dicomHabilitado: z.boolean(),
   dicomAeTitle: z.string().optional(),
   dicomIp: z.string().optional(),
   dicomPort: z.coerce.number().optional(),
-  emManutencao: z.boolean().default(false),
-  calibrado: z.boolean().default(false),
+  emManutencao: z.boolean(),
+  calibrado: z.boolean(),
 });
+
+type EquipamentoFormInputs = z.infer<typeof equipamentoSchema>;
+
+interface EquipamentoFormProps {
+  initialData?: EquipamentoResponse | null;
+  onSubmit: (data: EquipamentoRequest) => Promise<void>;
+  isLoading: boolean;
+  onCancel: () => void;
+}
 
 const MODALIDADES = ['MRI', 'CT', 'RX', 'US', 'MG', 'DX'];
 
-export function EquipamentoForm({ initialData, onSubmit, isLoading, onCancel }: any) {
+export function EquipamentoForm({ initialData, onSubmit, isLoading, onCancel }: EquipamentoFormProps) {
   const { data: salasPage } = useSalas(0, 100);
-  const { register, handleSubmit, control, reset, formState: { errors } } = useForm({
-    resolver: zodResolver(equipamentoSchema),
+  const { register, handleSubmit, control, reset, setError, formState: { errors } } = useForm<EquipamentoFormInputs>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(equipamentoSchema) as any,
     defaultValues: {
       nome: '',
       modalidade: '',
@@ -41,7 +54,6 @@ export function EquipamentoForm({ initialData, onSubmit, isLoading, onCancel }: 
       dicomPort: undefined,
       emManutencao: false,
       calibrado: false,
-      ...initialData
     }
   });
 
@@ -57,30 +69,45 @@ export function EquipamentoForm({ initialData, onSubmit, isLoading, onCancel }: 
         dicomHabilitado: initialData.dicomHabilitado || false,
         dicomAeTitle: initialData.dicomAeTitle || '',
         dicomIp: initialData.dicomIp || '',
-        dicomPort: initialData.dicomPort || undefined,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        dicomPort: (initialData.dicomPort as any) ?? undefined,
         emManutencao: initialData.emManutencao || false,
         calibrado: initialData.calibrado || false,
-      });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
     }
   }, [initialData, reset]);
 
+  const handleFormSubmit = async (data: EquipamentoFormInputs) => {
+    try {
+      await onSubmit(data as EquipamentoRequest);
+    } catch (error) {
+      applyFormErrors(error, setError);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2 max-h-[70vh] overflow-y-auto px-1">
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    <form onSubmit={handleSubmit(handleFormSubmit as any)} className="space-y-4 py-2 max-h-[70vh] overflow-y-auto px-1">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Nome do Equipamento</label>
-          <Input {...register('nome')} placeholder="Ex: Ressonância 01" />
+          <label className="text-sm font-medium text-muted-foreground uppercase text-[10px] font-bold">Nome do Equipamento</label>
+          <Input 
+            {...register('nome')} 
+            placeholder="Ex: Ressonância 01" 
+            className={errors.nome ? 'border-red-500 focus-visible:ring-red-500' : ''}
+          />
           {errors.nome && <p className="text-red-500 text-xs">{String(errors.nome.message)}</p>}
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Modalidade</label>
+          <label className="text-sm font-medium text-muted-foreground uppercase text-[10px] font-bold">Modalidade</label>
           <Controller
             control={control}
             name="modalidade"
             render={({ field }) => (
               <Select onValueChange={field.onChange} value={field.value || ''}>
-                <SelectTrigger>
+                <SelectTrigger className={errors.modalidade ? 'border-red-500 focus-visible:ring-red-500' : ''}>
                   <SelectValue placeholder="Selecione">
                     {field.value ? field.value : undefined}
                   </SelectValue>
@@ -97,22 +124,34 @@ export function EquipamentoForm({ initialData, onSubmit, isLoading, onCancel }: 
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Fabricante</label>
-          <Input {...register('fabricante')} placeholder="Ex: Siemens" />
+          <label className="text-sm font-medium text-muted-foreground uppercase text-[10px] font-bold">Fabricante</label>
+          <Input 
+            {...register('fabricante')} 
+            placeholder="Ex: Siemens" 
+            className={errors.fabricante ? 'border-red-500 focus-visible:ring-red-500' : ''}
+          />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Modelo</label>
-          <Input {...register('modelo')} placeholder="Ex: MAGNETOM Trio" />
+          <label className="text-sm font-medium text-muted-foreground uppercase text-[10px] font-bold">Modelo</label>
+          <Input 
+            {...register('modelo')} 
+            placeholder="Ex: MAGNETOM Trio" 
+            className={errors.modelo ? 'border-red-500 focus-visible:ring-red-500' : ''}
+          />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Número de Série</label>
-          <Input {...register('numeroSerie')} placeholder="Ex: SN123456" />
+          <label className="text-sm font-medium text-muted-foreground uppercase text-[10px] font-bold">Número de Série</label>
+          <Input 
+            {...register('numeroSerie')} 
+            placeholder="Ex: SN123456" 
+            className={errors.numeroSerie ? 'border-red-500 focus-visible:ring-red-500' : ''}
+          />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Sala</label>
+          <label className="text-sm font-medium text-muted-foreground uppercase text-[10px] font-bold">Sala</label>
           <Controller
             control={control}
             name="salaId"
@@ -120,7 +159,7 @@ export function EquipamentoForm({ initialData, onSubmit, isLoading, onCancel }: 
               const selectedSala = salasPage?.content.find(s => s.id === field.value);
               return (
                 <Select onValueChange={field.onChange} value={field.value || ""}>
-                  <SelectTrigger>
+                  <SelectTrigger className={errors.salaId ? 'border-red-500 focus-visible:ring-red-500' : ''}>
                     <SelectValue placeholder="Selecione a sala">
                       {selectedSala ? selectedSala.nome : undefined}
                     </SelectValue>
@@ -141,31 +180,31 @@ export function EquipamentoForm({ initialData, onSubmit, isLoading, onCancel }: 
       <div className="flex gap-6 py-2">
         <div className="flex items-center gap-2">
           <input type="checkbox" id="dicomHabilitado" {...register('dicomHabilitado')} className="rounded" />
-          <label htmlFor="dicomHabilitado" className="text-sm font-medium cursor-pointer">DICOM Habilitado</label>
+          <label htmlFor="dicomHabilitado" className="text-sm font-medium cursor-pointer text-muted-foreground uppercase text-[10px] font-bold">DICOM Habilitado</label>
         </div>
         <div className="flex items-center gap-2">
           <input type="checkbox" id="calibrado" {...register('calibrado')} className="rounded" />
-          <label htmlFor="calibrado" className="text-sm font-medium cursor-pointer">Calibrado</label>
+          <label htmlFor="calibrado" className="text-sm font-medium cursor-pointer text-muted-foreground uppercase text-[10px] font-bold">Calibrado</label>
         </div>
         <div className="flex items-center gap-2">
           <input type="checkbox" id="emManutencao" {...register('emManutencao')} className="rounded" />
-          <label htmlFor="emManutencao" className="text-sm font-medium cursor-pointer">Em Manutenção</label>
+          <label htmlFor="emManutencao" className="text-sm font-medium cursor-pointer text-muted-foreground uppercase text-[10px] font-bold">Em Manutenção</label>
         </div>
       </div>
 
-      <div className="border-t pt-4">
-        <h3 className="text-sm font-bold mb-2">Configurações DICOM</h3>
+      <div className="border-t border-border pt-4">
+        <h3 className="text-[10px] font-bold mb-2 uppercase text-primary-500 tracking-wider">Configurações DICOM</h3>
         <div className="grid grid-cols-3 gap-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">AE Title</label>
+            <label className="text-sm font-medium text-muted-foreground uppercase text-[10px] font-bold">AE Title</label>
             <Input {...register('dicomAeTitle')} placeholder="OMNILA_MRI_01" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Endereço IP</label>
+            <label className="text-sm font-medium text-muted-foreground uppercase text-[10px] font-bold">Endereço IP</label>
             <Input {...register('dicomIp')} placeholder="Ex: 192.168.1.50" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Porta</label>
+            <label className="text-sm font-medium text-muted-foreground uppercase text-[10px] font-bold">Porta</label>
             <Input type="number" {...register('dicomPort')} placeholder="104" />
           </div>
         </div>

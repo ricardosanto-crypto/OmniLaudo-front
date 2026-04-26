@@ -15,29 +15,44 @@ export function useEstudoByAgendamento(agendamentoId: string | undefined) {
   });
 }
 
+export interface OrthancSeries {
+  id: string;
+  descricao: string;
+  modalidade: string;
+  totalImagens: number;
+  instancias: string[];
+  previewUrl: string;
+}
+
+interface OrthancSerieResponse {
+  ID: string;
+  Instances: string[];
+  MainDicomTags: {
+    SeriesDescription?: string;
+    Modality?: string;
+  };
+}
+
 // 2. Busca as Séries de um Estudo direto do Orthanc (via nosso Proxy)
 export function useOrthancSeries(idOrthanc: string | undefined) {
-  return useQuery({
+  return useQuery<OrthancSeries[]>({
     queryKey: ['orthanc-series', idOrthanc],
     queryFn: async () => {
       if (!idOrthanc) return [];
-      const response = await api.get(`/dicom/proxy/estudo/${idOrthanc}/series`);
+      const response = await api.get<OrthancSerieResponse[]>(`/dicom/proxy/estudo/${idOrthanc}/series`);
       
-      // O Orthanc retorna um array de objetos contendo as Séries e suas Instâncias (Imagens)
-      // Vamos mapear isso para o formato que a nossa Sidebar espera
       const seriesOrthanc = response.data;
       
-      return seriesOrthanc.map((serie: any, index: number) => {
-        // Pega a imagem do meio da série para ser o Thumbnail (Preview)
-        const middleInstanceIndex = Math.floor(serie.Instances.length / 2);
-        const previewInstanceId = serie.Instances[middleInstanceIndex];
+      return seriesOrthanc.map((serie, index) => {
+        const middleInstanceIndex = Math.floor((serie.Instances?.length || 0) / 2);
+        const previewInstanceId = serie.Instances?.[middleInstanceIndex];
 
         return {
-          id: serie.ID, // ID da série no Orthanc
-          descricao: serie.MainDicomTags.SeriesDescription || `Série ${index + 1}`,
-          modalidade: serie.MainDicomTags.Modality || 'UN',
-          totalImagens: serie.Instances.length,
-          instancias: serie.Instances, // Lista de IDs das imagens dessa série
+          id: serie.ID,
+          descricao: serie.MainDicomTags?.SeriesDescription || `Série ${index + 1}`,
+          modalidade: serie.MainDicomTags?.Modality || 'UN',
+          totalImagens: serie.Instances?.length || 0,
+          instancias: serie.Instances || [],
           previewUrl: `${api.defaults.baseURL}/dicom/proxy/instancia/${previewInstanceId}/preview`,
         };
       });

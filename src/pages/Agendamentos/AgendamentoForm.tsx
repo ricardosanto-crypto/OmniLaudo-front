@@ -8,6 +8,12 @@ import { useEquipamentos } from '../../hooks/useEquipamentos';
 import { useProcedimentosByModalidade } from '../../hooks/useProcedimentos';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { AcaoCrud } from '../../components/ui/acao-crud';
+import { applyFormErrors } from '../../services/errorHandler';
+
+import { PacienteResponse } from '../../types/paciente';
+import { EquipamentoResponse } from '../../types/equipamento';
+import { ProcedimentoResponse } from '../../types/procedimento';
+import { AgendamentoRequest } from '../../types/agendamento';
 
 const agendamentoSchema = z.object({
   pacienteId: z.string().min(1, 'Selecione o paciente'),
@@ -18,15 +24,26 @@ const agendamentoSchema = z.object({
   duracaoEstimadaMinutos: z.coerce.number().default(30),
 });
 
-export function AgendamentoForm({ onSubmit, isLoading, onCancel }: any) {
+type AgendamentoFormInputs = z.infer<typeof agendamentoSchema>;
+
+interface AgendamentoFormProps {
+  onSubmit: (data: AgendamentoRequest) => Promise<void>; // PROMISE AQUI É A CHAVE!
+  isLoading: boolean;
+  onCancel: () => void;
+}
+
+export function AgendamentoForm({ onSubmit, isLoading, onCancel }: AgendamentoFormProps) {
   const [modalidadeSelecionada, setModalidadeSelecionada] = useState<string>();
   const { data: pacientes } = usePacientes(0, 100);
   const { data: equipamentos } = useEquipamentos(0, 100);
   const { data: procedimentosData, isLoading: isLoadingProcedimentos } = useProcedimentosByModalidade(modalidadeSelecionada);
-  const procedimentos = Array.isArray(procedimentosData) ? procedimentosData : [];
+  
+  // Garantia de tipo limpa (sem "as any")
+  const procedimentos = (Array.isArray(procedimentosData) ? procedimentosData : []) as ProcedimentoResponse[];
 
-  const { register, handleSubmit, control, watch, setValue, formState: { errors } } = useForm({
-    resolver: zodResolver(agendamentoSchema),
+  const { register, handleSubmit, control, watch, setValue, setError, formState: { errors } } = useForm<AgendamentoFormInputs>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(agendamentoSchema) as any,
     defaultValues: { duracaoEstimadaMinutos: 30 }
   });
 
@@ -35,7 +52,7 @@ export function AgendamentoForm({ onSubmit, isLoading, onCancel }: any) {
   // Quando selecionar um equipamento, atualizar a modalidade e limpar o procedimento
   useEffect(() => {
     if (equipamentoIdSelecionado && equipamentos?.content) {
-      const equip = equipamentos.content.find((e: any) => e.id === equipamentoIdSelecionado);
+      const equip = (equipamentos.content as EquipamentoResponse[]).find((e) => e.id === equipamentoIdSelecionado);
       setModalidadeSelecionada(equip?.modalidade);
       setValue('procedimentoCodigo', '');
       setValue('procedimentoNome', '');
@@ -44,24 +61,35 @@ export function AgendamentoForm({ onSubmit, isLoading, onCancel }: any) {
     }
   }, [equipamentoIdSelecionado, equipamentos, setValue]);
 
+  // WRAPPER DE INTERCEPTAÇÃO DE ERROS
+  const handleFormSubmit = async (data: AgendamentoFormInputs) => {
+    try {
+      await onSubmit(data as AgendamentoRequest);
+    } catch (error) {
+      // Injeta os erros recebidos do Spring Boot direto nos inputs do React
+      applyFormErrors(error, setError);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    <form onSubmit={handleSubmit(handleFormSubmit as any)} className="space-y-4 py-2">
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Paciente</label>
+        <label className="text-[10px] font-bold uppercase text-muted-foreground">Paciente</label>
         <Controller
           control={control}
           name="pacienteId"
           render={({ field }) => {
-            const selectedPaciente = pacientes?.content?.find((p: any) => p.id === field.value);
+            const selectedPaciente = (pacientes?.content as PacienteResponse[])?.find((p) => p.id === field.value);
             return (
               <Select onValueChange={field.onChange} value={field.value || ""}>
-                <SelectTrigger>
+                <SelectTrigger className={errors.pacienteId ? 'border-red-500 focus-visible:ring-red-500' : ''}>
                   <SelectValue placeholder="Selecione o paciente">
                     {selectedPaciente ? `${selectedPaciente.nome} ${selectedPaciente.sobrenome} (${selectedPaciente.documento})` : undefined}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {pacientes?.content?.map((p: any) => (
+                  {(pacientes?.content as PacienteResponse[])?.map((p) => (
                     <SelectItem key={p.id} value={p.id}>{p.nome} {p.sobrenome} ({p.documento})</SelectItem>
                   ))}
                 </SelectContent>
@@ -73,21 +101,21 @@ export function AgendamentoForm({ onSubmit, isLoading, onCancel }: any) {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Equipamento / Exame</label>
+        <label className="text-[10px] font-bold uppercase text-muted-foreground">Equipamento / Exame</label>
         <Controller
           control={control}
           name="equipamentoId"
           render={({ field }) => {
-            const selectedEquipamento = equipamentos?.content?.find((e: any) => e.id === field.value);
+            const selectedEquipamento = (equipamentos?.content as EquipamentoResponse[])?.find((e) => e.id === field.value);
             return (
               <Select onValueChange={field.onChange} value={field.value || ""}>
-                <SelectTrigger>
+                <SelectTrigger className={errors.equipamentoId ? 'border-red-500 focus-visible:ring-red-500' : ''}>
                   <SelectValue placeholder="Selecione o equipamento">
                     {selectedEquipamento ? `${selectedEquipamento.nome} (${selectedEquipamento.modalidade})` : undefined}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {equipamentos?.content?.map((e: any) => (
+                  {(equipamentos?.content as EquipamentoResponse[])?.map((e) => (
                     <SelectItem key={e.id} value={e.id}>{e.nome} ({e.modalidade})</SelectItem>
                   ))}
                 </SelectContent>
@@ -99,9 +127,9 @@ export function AgendamentoForm({ onSubmit, isLoading, onCancel }: any) {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Procedimento (TUSS)</label>
+        <label className="text-[10px] font-bold uppercase text-muted-foreground">Procedimento (TUSS)</label>
         {procedimentos.length === 0 && modalidadeSelecionada && !isLoadingProcedimentos ? (
-          <div className="p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800/50 rounded text-yellow-800 dark:text-yellow-400 text-xs">
+          <div className="p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800/50 rounded text-yellow-800 dark:text-yellow-400 text-xs font-bold">
             Nenhum procedimento disponível para esta modalidade. Verifique com o administrador.
           </div>
         ) : (
@@ -109,29 +137,30 @@ export function AgendamentoForm({ onSubmit, isLoading, onCancel }: any) {
             control={control}
             name="procedimentoCodigo"
             render={({ field }) => {
-              const selectedProc = procedimentos.find((p: any) => p.codigo === field.value);
+              const selectedProc = procedimentos.find((p) => p.codigo === field.value);
               return (
                 <Select 
                   onValueChange={(codigo) => {
-                    const proc = procedimentos.find((p: any) => p.codigo === codigo);
+                    const proc = procedimentos.find((p) => p.codigo === codigo);
                     if (proc) {
                       setValue('procedimentoCodigo', proc.codigo);
                       setValue('procedimentoNome', proc.nome);
-                      setValue('duracaoEstimadaMinutos', proc.duracaoEstimadaMinutos || 30);
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      setValue('duracaoEstimadaMinutos', (proc.duracaoEstimadaMinutos as any) || 30);
                       field.onChange(codigo);
                     }
                   }} 
                   value={field.value || ""}
                   disabled={!modalidadeSelecionada || procedimentos.length === 0}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={errors.procedimentoCodigo ? 'border-red-500 focus-visible:ring-red-500' : ''}>
                     <SelectValue placeholder={modalidadeSelecionada ? (isLoadingProcedimentos ? "Carregando procedimentos..." : "Selecione um procedimento") : "Selecione um equipamento primeiro"}>
                       {selectedProc ? `${selectedProc.codigo} - ${selectedProc.nome}` : undefined}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {procedimentos.length > 0 ? (
-                      procedimentos.map((p: any) => (
+                      procedimentos.map((p) => (
                         <SelectItem key={p.id} value={p.codigo}>
                           {p.codigo} - {p.nome} ({p.duracaoEstimadaMinutos} min)
                         </SelectItem>
@@ -148,17 +177,26 @@ export function AgendamentoForm({ onSubmit, isLoading, onCancel }: any) {
         {errors.procedimentoCodigo && <p className="text-red-500 text-xs">{String(errors.procedimentoCodigo.message)}</p>}
       </div>
 
+      {/* Campo oculto que o Zod exige mas que preenchemos na seleção do Select */}
       <input type="hidden" {...register('procedimentoNome')} />
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Data e Hora</label>
-          <Input type="datetime-local" {...register('dataHoraAgendada')} />
+          <label className="text-[10px] font-bold uppercase text-muted-foreground">Data e Hora</label>
+          <Input 
+            type="datetime-local" 
+            {...register('dataHoraAgendada')} 
+            className={errors.dataHoraAgendada ? 'border-red-500 focus-visible:ring-red-500' : ''}
+          />
           {errors.dataHoraAgendada && <p className="text-red-500 text-xs">{String(errors.dataHoraAgendada.message)}</p>}
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Duração (min)</label>
-          <Input type="number" {...register('duracaoEstimadaMinutos')} />
+          <label className="text-[10px] font-bold uppercase text-muted-foreground">Duração (min)</label>
+          <Input 
+            type="number" 
+            {...register('duracaoEstimadaMinutos')} 
+            className={errors.duracaoEstimadaMinutos ? 'border-red-500 focus-visible:ring-red-500' : ''}
+          />
         </div>
       </div>
 

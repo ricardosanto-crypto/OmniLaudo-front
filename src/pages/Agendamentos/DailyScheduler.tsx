@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { format, getHours, getMinutes } from 'date-fns';
+import { getHours, getMinutes } from 'date-fns';
 import { AgendamentoResponse } from '../../types/agendamento';
 import { cn } from '../../lib/utils';
 import { Clock } from 'lucide-react';

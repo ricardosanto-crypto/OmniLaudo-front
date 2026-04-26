@@ -19,13 +19,13 @@ export function Salas() {
 
   const { data: pageSalas, isLoading, isError, error } = useSalas(page, size);
   const { data: unidadesPage } = useUnidades(0, 100);
-  const { mutate: inativar, isPending: isDeleting } = useInativarSala();
-  const { mutate: criarSala, isPending: isCreating } = useCreateSala();
-  const { mutate: atualizarSala, isPending: isUpdating } = useUpdateSala();
+  const inativar = useInativarSala();
+  const criarSala = useCreateSala();
+  const atualizarSala = useUpdateSala();
 
   const handleInativar = (id: string) => {
     if (window.confirm('Deseja realmente inativar esta sala?')) {
-      inativar(id);
+      inativar.mutate(id);
     }
   };
 
@@ -46,17 +46,6 @@ export function Salas() {
     });
     return map;
   }, [unidadesPage]);
-
-  const handleSubmit = (data: SalaRequest) => {
-    if (salaEmEdicao) {
-      atualizarSala(
-        { id: salaEmEdicao.id, data },
-        { onSuccess: () => setIsModalOpen(false) }
-      );
-    } else {
-      criarSala(data, { onSuccess: () => setIsModalOpen(false) });
-    }
-  };
 
   const columns: ColumnDef<SalaResponse>[] = [
     { header: 'Nome da Sala', accessorKey: 'nome', className: 'font-semibold text-foreground' },
@@ -93,7 +82,7 @@ export function Salas() {
             <button
               className="text-red-500 hover:text-red-700 p-2 disabled:opacity-50"
               title="Inativar"
-              disabled={!item.ativo || isDeleting}
+              disabled={!item.ativo || inativar.isPending}
               onClick={() => handleInativar(item.id)}
             >
               <span className="sr-only">Inativar sala</span>
@@ -149,8 +138,15 @@ export function Salas() {
             </DialogHeader>
             <SalaForm
               initialData={salaEmEdicao}
-              onSubmit={handleSubmit}
-              isLoading={isCreating || isUpdating}
+              onSubmit={async (data: SalaRequest) => {
+                if (salaEmEdicao) {
+                  await atualizarSala.mutateAsync({ id: salaEmEdicao.id, data });
+                } else {
+                  await criarSala.mutateAsync(data);
+                }
+                setIsModalOpen(false);
+              }}
+              isLoading={criarSala.isPending || atualizarSala.isPending}
               onCancel={() => setIsModalOpen(false)}
             />
           </DialogContent>

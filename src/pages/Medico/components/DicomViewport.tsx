@@ -3,32 +3,34 @@ import * as cornerstone from 'cornerstone-core';
 import * as cornerstoneTools from 'cornerstone-tools';
 
 interface DicomViewportProps {
-  imageId: string | null; // ex: 'wadouri:http://localhost:3001/api/v1/dicom/proxy/instancia/123/file'
+  imageId: string | null;
   activeTool: string;
-  onImageScroll?: (direction: number) => void; // +1 pra frente, -1 pra trás
+  onImageScroll?: (direction: number) => void;
   resetCounter?: number;
   invertCounter?: number;
 }
 
 export function DicomViewport({ imageId, activeTool, onImageScroll, resetCounter, invertCounter }: DicomViewportProps) {
   const elementRef = useRef<HTMLDivElement>(null);
-  const toolsReady = useRef(false);
+  const toolsInitialized = useRef(false);
+  const scrollRef = useRef(onImageScroll);
+
   const [viewportData, setViewportData] = useState({ zoom: 1, windowWidth: 0, windowCenter: 0 });
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Referência mutável para onImageScroll (evita stale closures)
-  const scrollRef = useRef(onImageScroll);
-  scrollRef.current = onImageScroll;
+  // Mantém a ref de scroll sempre atualizada sem causar re-renders do useEffect principal
+  useEffect(() => {
+    scrollRef.current = onImageScroll;
+  }, [onImageScroll]);
 
-  // Efeito de Montagem/Desmontagem do Elemento Cornerstone
+  // EFEITO 1: Inicialização e Limpeza do DOM do Cornerstone
   useEffect(() => {
     const element = elementRef.current;
     if (!element) return;
 
     cornerstone.enable(element);
 
-    // Escuta mudanças de zoom/contraste aplicadas pelo médico via mouse
     const onImageRendered = () => {
       try {
         const viewport = cornerstone.getViewport(element);
@@ -39,40 +41,43 @@ export function DicomViewport({ imageId, activeTool, onImageScroll, resetCounter
             windowCenter: viewport.voi.windowCenter,
           });
         }
-      } catch { /* element may be disabled */ }
+      } catch { /* ignora se já foi destruído */ }
     };
-    element.addEventListener('cornerstoneimagerendered', onImageRendered);
 
-    // Listener de scroll do mouse para trocar as imagens (slices)
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       if (scrollRef.current) {
-        const direction = e.deltaY > 0 ? 1 : -1;
-        scrollRef.current(direction);
+        scrollRef.current(e.deltaY > 0 ? 1 : -1);
       }
     };
+
+    element.addEventListener('cornerstoneimagerendered', onImageRendered);
     element.addEventListener('wheel', onWheel, { passive: false });
 
-    // ResizeObserver: Cornerstone PRECISA ser notificado quando o container muda de tamanho
-    // Sem isso, o canvas fica com dimensões 0x0 → tela preta
+    // ResizeObserver com debounce via requestAnimationFrame
+    let rafId: number;
     const resizeObserver = new ResizeObserver(() => {
-      try {
-        cornerstone.resize(element, true);
-      } catch { /* element may not have an image yet */ }
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        try { if (element) cornerstone.resize(element, true); } catch { /* ignore */ }
+      });
     });
     resizeObserver.observe(element);
 
     return () => {
+      // CLEANUP BLINDADO (Evita memory leaks monstruosos de canvas)
       resizeObserver.disconnect();
+      cancelAnimationFrame(rafId);
       element.removeEventListener('cornerstoneimagerendered', onImageRendered);
       element.removeEventListener('wheel', onWheel);
       try {
         cornerstone.disable(element);
-      } catch { /* already disabled */ }
+      } catch { /* ignore */ }
+      toolsInitialized.current = false; // Reset de tools na destruição da div
     };
   }, []);
 
-  // Efeito para carregar a imagem quando o ID mudar
+  // EFEITO 2: Carregamento de Imagem DICOM
   useEffect(() => {
     const element = elementRef.current;
     if (!element || !imageId) return;
@@ -80,9 +85,9 @@ export function DicomViewport({ imageId, activeTool, onImageScroll, resetCounter
     setIsLoading(true);
     setLoadError(null);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cornerstone.loadImage(imageId).then((image: any) => {
-      // Se a Imagem/DICOM vier sem metadados de espaçamento físico (ex: Simuladores),
-      // forçamos uma calibração 1:1, fazendo a Régua passar a ler Milímetros ('mm') em vez de 'px'.
+      // Fallback para simuladores sem metadados físicos
       if (!image.rowPixelSpacing || !image.columnPixelSpacing) {
         image.rowPixelSpacing = 1.0; 
         image.columnPixelSpacing = 1.0;
@@ -90,39 +95,21 @@ export function DicomViewport({ imageId, activeTool, onImageScroll, resetCounter
 
       cornerstone.displayImage(element, image);
 
-      // Registra as ferramentas no ELEMENTO apenas na primeira vez
-      if (!toolsReady.current) {
-        cornerstoneTools.addToolForElement(element, cornerstoneTools.WwwcTool);
-        cornerstoneTools.addToolForElement(element, cornerstoneTools.PanTool);
-        cornerstoneTools.addToolForElement(element, cornerstoneTools.ZoomTool);
-        cornerstoneTools.addToolForElement(element, cornerstoneTools.LengthTool);
-        cornerstoneTools.addToolForElement(element, cornerstoneTools.AngleTool);
-        cornerstoneTools.addToolForElement(element, cornerstoneTools.EllipticalRoiTool);
-        cornerstoneTools.addToolForElement(element, cornerstoneTools.RectangleRoiTool);
-        cornerstoneTools.addToolForElement(element, cornerstoneTools.ProbeTool);
-        cornerstoneTools.addToolForElement(element, cornerstoneTools.ArrowAnnotateTool);
+      // Adiciona tools no elemento apenas 1x
+      if (!toolsInitialized.current) {
+        const tools = ['Wwwc', 'Pan', 'Zoom', 'Length', 'Angle', 'EllipticalRoi', 'RectangleRoi', 'Probe', 'ArrowAnnotate', 'Eraser'];
+        tools.forEach(t => cornerstoneTools.addToolForElement(element, cornerstoneTools[`${t}Tool`]));
+        
         cornerstoneTools.addToolForElement(element, cornerstoneTools.TextMarkerTool, {
-          configuration: {
-            markers: ['Anotação', 'Nódulo', 'Cisto', 'Lesão', 'Cálculo'],
-            current: 'Anotação',
-            ascending: true,
-            loop: true,
-          }
+          configuration: { markers: ['Anotação', 'Nódulo', 'Cisto'], current: 'Anotação', ascending: true, loop: true }
         });
-        cornerstoneTools.addToolForElement(element, cornerstoneTools.EraserTool);
-        toolsReady.current = true;
+        
+        toolsInitialized.current = true;
       }
 
-      // Ativa a ferramenta padrão (Contraste W/L)
-      try {
-        cornerstoneTools.setToolActiveForElement(element, 'Wwwc', { mouseButtonMask: 1 });
-      } catch { /* tool may already be active */ }
-
       setIsLoading(false);
-
-      // Fit-to-window: ajusta o zoom para caber no container
       cornerstone.resize(element, true);
-
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }).catch((err: any) => {
       console.error("Erro ao carregar DICOM:", err);
       setLoadError(err?.message || 'Erro ao carregar imagem DICOM');
@@ -130,50 +117,33 @@ export function DicomViewport({ imageId, activeTool, onImageScroll, resetCounter
     });
   }, [imageId]);
 
-  // Efeito para trocar a ferramenta ativa quando o state 'activeTool' mudar na header
+  // EFEITO 3: Troca de Ferramenta Ativa
   useEffect(() => {
     const element = elementRef.current;
-    if (!element || !toolsReady.current) return;
+    if (!element || !toolsInitialized.current) return;
 
-    // Desabilita todas as tools antes de ativar a nova
-    const allTools = [
-      'Wwwc', 'Pan', 'Zoom', 'Length', 'Angle',
-      'EllipticalRoi', 'RectangleRoi', 'Probe', 'ArrowAnnotate', 'TextMarker', 'Eraser'
-    ];
+    const allTools = ['Wwwc', 'Pan', 'Zoom', 'Length', 'Angle', 'EllipticalRoi', 'RectangleRoi', 'Probe', 'ArrowAnnotate', 'TextMarker', 'Eraser'];
 
-    if (activeTool === 'cursor') {
-      // Modo cursor: desabilita tudo
-      allTools.forEach(name => {
-        try { cornerstoneTools.setToolPassiveForElement(element, name); } catch { }
-      });
-      return;
-    }
-
-    // Ativa a tool selecionada
     allTools.forEach(name => {
       try {
-        if (name === activeTool) {
+        if (activeTool === 'cursor') {
+          cornerstoneTools.setToolPassiveForElement(element, name);
+        } else if (name === activeTool) {
           cornerstoneTools.setToolActiveForElement(element, name, { mouseButtonMask: 1 });
         } else {
           cornerstoneTools.setToolPassiveForElement(element, name);
         }
-      } catch { }
+      } catch { /* ignore */ }
     });
-  }, [activeTool]);
+  }, [activeTool, imageId]); // Depende do imageId para garantir que aplique após a imagem carregar
 
-  // Efeito para observer o gatilho de RESET (acionado pelas ferramentas da Header)
+  // EFEITO 4: Reset & Invert
   useEffect(() => {
-    const element = elementRef.current;
-    if (element && resetCounter && resetCounter > 0) {
-      try { 
-        cornerstone.reset(element);
-      } catch (err) {
-        console.error("Erro ao resetar viewport:", err);
-      }
+    if (elementRef.current && resetCounter && resetCounter > 0) {
+      try { cornerstone.reset(elementRef.current); } catch { /* ignore */ }
     }
   }, [resetCounter]);
 
-  // Efeito para observer o gatilho de INVERTER CORES
   useEffect(() => {
     const element = elementRef.current;
     if (element && invertCounter && invertCounter > 0) {
@@ -183,44 +153,14 @@ export function DicomViewport({ imageId, activeTool, onImageScroll, resetCounter
           viewport.invert = !viewport.invert;
           cornerstone.setViewport(element, viewport);
         }
-      } catch (err) {
-        console.error("Erro ao inverter cores:", err);
-      }
+      } catch { /* ignore */ }
     }
   }, [invertCounter]);
 
-  // Efeito para observer redimensionamento da tela (ResizeObserver)
-  useEffect(() => {
-    const element = elementRef.current;
-    if (!element) return;
-
-    let rafId: number;
-    const resizeObserver = new ResizeObserver(() => {
-      // Usa requestAnimationFrame para evitar "ResizeObserver loop limit exceeded" e engasgos severos (throttling)
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => {
-        try {
-          if (element) cornerstone.resize(element, true);
-        } catch (e) {
-          console.warn("Erro ao fazer resize do cornerstone:", e);
-        }
-      });
-    });
-
-    resizeObserver.observe(element);
-
-    return () => {
-      resizeObserver.disconnect();
-      cancelAnimationFrame(rafId);
-    };
-  }, []);
-
   return (
     <div className="relative flex h-full w-full overflow-hidden bg-black" onContextMenu={(e) => e.preventDefault()}>
-      {/* Container do Canvas Cornerstone */}
       <div ref={elementRef} className="absolute inset-0" />
 
-      {/* Loading Indicator */}
       {isLoading && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="flex flex-col items-center gap-2">
@@ -230,7 +170,6 @@ export function DicomViewport({ imageId, activeTool, onImageScroll, resetCounter
         </div>
       )}
 
-      {/* Error Display */}
       {loadError && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="rounded-lg bg-red-950/80 border border-red-900 px-4 py-3 text-center">
@@ -240,13 +179,7 @@ export function DicomViewport({ imageId, activeTool, onImageScroll, resetCounter
         </div>
       )}
 
-      {/* OVERLAYS (Desabilitam pointer-events para não atrapalhar o mouse no canvas) */}
       <div className="pointer-events-none absolute inset-0 p-4 font-mono text-xs drop-shadow-[0_1px_2px_rgba(0,0,0,1)]">
-        {/* Top Left */}
-        <div className="absolute top-4 left-4 flex flex-col text-green-400">
-        </div>
-
-        {/* Bottom Left */}
         <div className="absolute bottom-4 left-4 flex flex-col text-amber-400">
           <span className="font-bold">Zoom: {(viewportData.zoom * 100).toFixed(0)}%</span>
           <span>W: {viewportData.windowWidth.toFixed(0)} L: {viewportData.windowCenter.toFixed(0)}</span>

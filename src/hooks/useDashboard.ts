@@ -18,9 +18,9 @@ export interface DashboardStats {
 export function useDashboardStats() {
   return useQuery({
     queryKey: ['dashboard-stats'],
-    queryFn: async (): Promise<DashboardStats> => {
+    queryFn: async (): Promise<DashboardStats | null> => {
       const response = await api.get<ApiResponse<DashboardStats>>('/dashboard/me');
-      return response.data.data;
+      return response.data ? response.data.data : null;
     },
     refetchInterval: 60000, // Atualiza a cada 1 minuto
   });

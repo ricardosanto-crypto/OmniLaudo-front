@@ -1,12 +1,3 @@
-// Mapeamento do Spring Data Page<T>
-export interface Page<T> {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number; // Página atual
-}
-
 // Espelha o DTO java: com.omnilaudo.api.dto.unidade.UnidadeRequestDTO
 export interface UnidadeRequest {
   nome: string;

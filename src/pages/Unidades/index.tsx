@@ -5,7 +5,7 @@ import { RoleGuard } from '../../components/auth/RoleGuard';
 import { Button } from '../../components/ui/button';
 import { PageWrapper } from '../../components/layout/PageWrapper';
 import { DataTable, ColumnDef } from '../../components/ui/data-table';
-import { UnidadeResponse } from '../../types/unidade';
+import { UnidadeResponse, UnidadeRequest } from '../../types/unidade';
 import { UnidadeForm } from './UnidadeForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../../components/ui/dialog';
 
@@ -19,13 +19,13 @@ export function Unidades() {
 
   // Hooks de Dados (TanStack Query)
   const { data: pageUnidades, isLoading, isError, error } = useUnidades(page, size);
-  const { mutate: inativar, isPending: isDeleting } = useInativarUnidade();
-  const { mutate: criar, isPending: isCreating } = useCreateUnidade();
-  const { mutate: atualizar, isPending: isUpdating } = useUpdateUnidade();
+  const inativar = useInativarUnidade();
+  const criar = useCreateUnidade();
+  const atualizar = useUpdateUnidade();
 
   const handleInativar = (id: string) => {
     if (window.confirm('Tem certeza que deseja inativar esta unidade?')) {
-      inativar(id);
+      inativar.mutate(id);
     }
   };
 
@@ -70,7 +70,7 @@ export function Unidades() {
             <button
               className="text-red-500 hover:text-red-700 p-2 disabled:opacity-50"
               title="Inativar"
-              disabled={!item.ativo || isDeleting}
+              disabled={!item.ativo || inativar.isPending}
               onClick={() => handleInativar(item.id)}
             >
               <span className="sr-only">Inativar unidade</span>
@@ -123,14 +123,15 @@ export function Unidades() {
             </DialogHeader>
             <UnidadeForm
               initialData={unidadeEmEdicao}
-              isLoading={isCreating || isUpdating}
+              isLoading={criar.isPending || atualizar.isPending}
               onCancel={() => setIsModalOpen(false)}
-              onSubmit={(data: any) => {
+              onSubmit={async (data: UnidadeRequest) => {
                 if (unidadeEmEdicao) {
-                  atualizar({ id: unidadeEmEdicao.id, data }, { onSuccess: () => setIsModalOpen(false) });
+                  await atualizar.mutateAsync({ id: unidadeEmEdicao.id, data });
                 } else {
-                  criar(data, { onSuccess: () => setIsModalOpen(false) });
+                  await criar.mutateAsync(data);
                 }
+                setIsModalOpen(false);
               }}
             />
           </DialogContent>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import { toast } from 'sonner';
@@ -97,7 +97,7 @@ function useDeleteModelo() {
 }
 
 // ── Editor Toolbar ─────────────────────────────────────
-function EditorToolbar({ editor }: { editor: any }) {
+function EditorToolbar({ editor }: { editor: Editor | null }) {
   if (!editor) return null;
 
   const btnClass = (active: boolean) =>

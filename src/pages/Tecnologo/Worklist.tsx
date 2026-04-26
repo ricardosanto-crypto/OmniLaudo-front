@@ -1,5 +1,5 @@
 import { useState, ChangeEvent } from 'react';
-import { Play, CheckCircle, UserCheck, Activity, Search, UploadCloud } from 'lucide-react';
+import { CheckCircle, UserCheck, Activity, Search, UploadCloud } from 'lucide-react';
 import { useAgendamentos, useUpdateAgendamentoStatus } from '../../hooks/useAgendamentos';
 import { useUploadDicom } from '../../hooks/useUploadDicom';
 import { DataTable, ColumnDef } from '../../components/ui/data-table';
@@ -7,14 +7,12 @@ import { AgendamentoResponse, StatusAgendamento } from '../../types/agendamento'
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../components/ui/dialog';
-import { Link } from 'react-router-dom';
 import { PageWrapper } from '../../components/layout/PageWrapper';
 
 export function WorklistTecnologo() {
   const [page, setPage] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [selectedAgendamento, setSelectedAgendamento] = useState<AgendamentoResponse | null>(null);
   const { data: pageAgend, isLoading } = useAgendamentos(page, 10);
   const { mutate: updateStatus } = useUpdateAgendamentoStatus();
   const { mutate: uploadDicom, isPending: isUploading } = useUploadDicom();

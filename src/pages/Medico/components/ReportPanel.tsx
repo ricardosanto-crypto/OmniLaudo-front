@@ -58,10 +58,19 @@ function useFrases() {
   });
 }
 
+interface Assinatura {
+  id: string;
+  nomeUsuario: string;
+  tipo: string;
+  perfilUsuario: string;
+  dataAssinatura: string;
+  notas?: string;
+}
+
 interface ReportPanelProps {
   laudoInicial?: string;
   onContentChange?: (content: string) => void;
-  assinaturas?: any[];
+  assinaturas?: Assinatura[];
   series?: SerieDicomView[];
   activeSeriesId?: string | null;
   onSelectSeries?: (seriesId: string) => void;
@@ -82,7 +91,7 @@ export function ReportPanel({
   const [isSeriesOpen, setIsSeriesOpen] = useState(false);
   const [isModelosOpen, setIsModelosOpen] = useState(false);
   const { user } = useAuthStore();
-  const initialSet = useState(false);
+  const [isInitialSet, setIsInitialSet] = useState(false);
 
   const { data: modelos = [] } = useModelos();
   const { data: frases = [] } = useFrases();
@@ -113,11 +122,11 @@ export function ReportPanel({
 
   // Carrega conteúdo inicial do laudo quando disponível
   useEffect(() => {
-    if (editor && laudoInicial && !initialSet[0]) {
+    if (editor && laudoInicial && !isInitialSet) {
       editor.commands.setContent(laudoInicial);
-      initialSet[1](true);
+      setIsInitialSet(true);
     }
-  }, [editor, laudoInicial]);
+  }, [editor, laudoInicial, isInitialSet]);
 
   // Aplica um modelo (substitui todo o conteudo)
   const aplicarModelo = (modelo: ModeloLaudo) => {
@@ -338,7 +347,7 @@ export function ReportPanel({
                 <p className="text-[10px] text-slate-600 mt-1">O laudo ainda não foi finalizado</p>
               </div>
             ) : (
-              assinaturas.map((ass: any) => (
+              assinaturas.map((ass: Assinatura) => (
                 <div key={ass.id} className="rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 shadow-sm">
                   <div className="flex items-center gap-2 mb-1.5 border-b border-slate-100 dark:border-slate-700/50 pb-1.5">
                     <span className="text-emerald-500 font-bold text-[10px]">✓</span>

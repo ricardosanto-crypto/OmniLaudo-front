@@ -13,21 +13,21 @@ export function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   const location = useLocation();
   const [accessDeniedToastShown, setAccessDeniedToastShown] = useState(false);
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
   const hasPermission = !allowedRoles || allowedRoles.length === 0 || user?.roles.some((role) => allowedRoles.includes(role));
   const noPermission = allowedRoles && allowedRoles.length > 0 && !hasPermission;
 
   useEffect(() => {
-    if (noPermission && !accessDeniedToastShown) {
+    if (noPermission && !accessDeniedToastShown && isAuthenticated) {
       toast.error('Acesso Negado', {
         description: 'Você não tem permissão para acessar esta página.',
       });
       setAccessDeniedToastShown(true);
     }
-  }, [noPermission, accessDeniedToastShown]);
+  }, [noPermission, accessDeniedToastShown, isAuthenticated]);
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
 
   if (noPermission) {
     return <Navigate to="/" replace />;

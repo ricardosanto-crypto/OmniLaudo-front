@@ -6,7 +6,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../../services/api';
 import { useAuthStore } from '../../store/useAuthStore';
 import { ApiResponse } from '../../types/api';
-import { TokenResponse, AuthUser } from '../../types/auth';
+import { TokenResponse, AuthUser, Role } from '../../types/auth';
 import { toast } from 'sonner';
 
 // Componentes do Shadcn
@@ -23,7 +23,14 @@ const loginSchema = z.object({
 
 type LoginFormInputs = z.infer<typeof loginSchema>;
 
-function parseJwt(token: string): Partial<AuthUser> | null {
+interface JwtPayload {
+  sub: string;
+  nome?: string;
+  roles?: string[];
+  unidadesIds?: string[];
+}
+
+function parseJwt(token: string): JwtPayload | null {
   try {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -48,9 +55,8 @@ export function Login() {
 
   const mutation = useMutation<ApiResponse<TokenResponse>, ApiResponse<null>, LoginFormInputs>({
     mutationFn: (data) => api.post('/auth/login', data).then((res) => res.data),
-    onSuccess: (response: any) => {
-      // O backend retorna ApiResponse<TokenResponse>, onde o DTO está em .data
-      const payload = response.data || response;
+    onSuccess: (response: ApiResponse<TokenResponse>) => {
+      const payload = response.data;
       const token = payload?.token;
 
       if (!token) {
@@ -60,11 +66,11 @@ export function Login() {
 
       const decoded = parseJwt(token);
       const user: AuthUser = {
-        id: (decoded as any)?.sub || '',
-        nome: (decoded as any)?.nome || 'Usuário',
-        email: (decoded as any)?.sub || '',
-        roles: (decoded as any)?.roles || [],
-        unidadesIds: (decoded as any)?.unidadesIds || [],
+        id: decoded?.sub || '',
+        nome: decoded?.nome || 'Usuário',
+        email: decoded?.sub || '',
+        roles: (decoded?.roles as Role[]) || [],
+        unidadesIds: decoded?.unidadesIds || [],
       };
 
       loginFn(token, user);

@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { Input } from '../../components/ui/input';
 import { UnidadeRequest, UnidadeResponse } from '../../types/unidade';
 import { AcaoCrud } from '../../components/ui/acao-crud';
+import { applyFormErrors } from '../../services/errorHandler';
 
 const unidadeSchema = z.object({
   nome: z.string().min(1, 'O nome da unidade é obrigatório'),
@@ -17,7 +18,7 @@ export type UnidadeFormInputs = z.infer<typeof unidadeSchema>;
 
 interface UnidadeFormProps {
   initialData?: UnidadeResponse | null;
-  onSubmit: (data: UnidadeRequest) => void;
+  onSubmit: (data: UnidadeRequest) => Promise<void>;
   isLoading: boolean;
   onCancel: () => void;
 }
@@ -27,6 +28,7 @@ export function UnidadeForm({ initialData, onSubmit, isLoading, onCancel }: Unid
     register,
     handleSubmit,
     reset,
+    setError,
     formState: { errors },
   } = useForm<UnidadeFormInputs>({
     resolver: zodResolver(unidadeSchema),
@@ -51,31 +53,54 @@ export function UnidadeForm({ initialData, onSubmit, isLoading, onCancel }: Unid
     }
   }, [initialData, reset]);
 
+  const handleFormSubmit = async (data: UnidadeFormInputs) => {
+    try {
+      await onSubmit(data);
+    } catch (error) {
+      applyFormErrors(error, setError);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 py-4">
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Nome da Unidade <span className="text-red-500">*</span></label>
         <Input 
           placeholder="Ex: OmniLaudo - Matriz" 
           {...register('nome')} 
-          className={errors.nome ? 'border-red-500' : ''} 
+          className={errors.nome ? 'border-red-500 focus-visible:ring-red-500' : ''} 
         />
         {errors.nome && <p className="text-red-500 text-xs">{errors.nome.message}</p>}
       </div>
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700 dark:text-slate-300">CNPJ</label>
-        <Input placeholder="Apenas números" {...register('cnpj')} />
+        <Input 
+          placeholder="Apenas números" 
+          {...register('cnpj')} 
+          className={errors.cnpj ? 'border-red-500 focus-visible:ring-red-500' : ''} 
+        />
+        {errors.cnpj && <p className="text-red-500 text-xs">{errors.cnpj.message}</p>}
       </div>
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Endereço Completo</label>
-        <Input placeholder="Av. Central, 1000" {...register('endereco')} />
+        <Input 
+          placeholder="Av. Central, 1000" 
+          {...register('endereco')} 
+          className={errors.endereco ? 'border-red-500 focus-visible:ring-red-500' : ''} 
+        />
+        {errors.endereco && <p className="text-red-500 text-xs">{errors.endereco.message}</p>}
       </div>
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Telefone</label>
-        <Input placeholder="(11) 99999-9999" {...register('telefone')} />
+        <Input 
+          placeholder="(11) 99999-9999" 
+          {...register('telefone')} 
+          className={errors.telefone ? 'border-red-500 focus-visible:ring-red-500' : ''} 
+        />
+        {errors.telefone && <p className="text-red-500 text-xs">{errors.telefone.message}</p>}
       </div>
 
       <AcaoCrud 

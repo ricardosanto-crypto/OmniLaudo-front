@@ -7,6 +7,7 @@ import { useUnidades } from '../../hooks/useUnidades';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { SalaResponse } from '../../types/sala';
 import { AcaoCrud } from '../../components/ui/acao-crud';
+import { applyFormErrors } from '../../services/errorHandler';
 
 const salaSchema = z.object({
   nome: z.string().min(1, 'Nome da sala é obrigatório'),
@@ -17,14 +18,14 @@ export type SalaFormInputs = z.infer<typeof salaSchema>;
 
 interface SalaFormProps {
   initialData?: SalaResponse | null;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: SalaFormInputs) => Promise<void>;
   isLoading: boolean;
   onCancel: () => void;
 }
 
 export function SalaForm({ initialData, onSubmit, isLoading, onCancel }: SalaFormProps) {
   const { data: unidadesPage } = useUnidades(0, 100); 
-  const { register, handleSubmit, control, reset, formState: { errors } } = useForm<SalaFormInputs>({
+  const { register, handleSubmit, control, reset, setError, formState: { errors } } = useForm<SalaFormInputs>({
     resolver: zodResolver(salaSchema),
     defaultValues: {
       nome: initialData?.nome || '',
@@ -43,11 +44,23 @@ export function SalaForm({ initialData, onSubmit, isLoading, onCancel }: SalaFor
     }
   }, [initialData, reset]);
 
+  const handleFormSubmit = async (data: SalaFormInputs) => {
+    try {
+      await onSubmit(data);
+    } catch (error) {
+      applyFormErrors(error, setError);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 py-4">
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Nome da Sala</label>
-        <Input {...register('nome')} placeholder="Ex: Sala de Ressonância 01" />
+        <Input 
+          {...register('nome')} 
+          placeholder="Ex: Sala de Ressonância 01" 
+          className={errors.nome ? 'border-red-500 focus-visible:ring-red-500' : ''}
+        />
         {errors.nome && <p className="text-red-500 text-xs">{String(errors.nome.message)}</p>}
       </div>
 
@@ -61,7 +74,7 @@ export function SalaForm({ initialData, onSubmit, isLoading, onCancel }: SalaFor
 
             return (
               <Select onValueChange={field.onChange} value={field.value || ''}>
-                <SelectTrigger>
+                <SelectTrigger className={errors.unidadeId ? 'border-red-500 focus-visible:ring-red-500' : ''}>
                   <SelectValue placeholder="Selecione a unidade">
                     {selectedUnidade ? selectedUnidade.nome : undefined}
                   </SelectValue>

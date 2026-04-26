@@ -3,6 +3,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Input } from '../../components/ui/input';
 import { AcaoCrud } from '../../components/ui/acao-crud';
+import { PacienteResponse, PacienteRequest } from '../../types/paciente';
+import { applyFormErrors } from '../../services/errorHandler'; // <-- NOVO IMPORT
 
 const pacienteSchema = z.object({
   nome: z.string().min(1, 'Nome é obrigatório'),
@@ -16,46 +18,65 @@ const pacienteSchema = z.object({
   numeroCarteiraSeguro: z.string().optional(),
 });
 
-export function PacienteForm({ initialData, onSubmit, isLoading, onCancel }: any) {
-  const { register, handleSubmit, formState: { errors } } = useForm({
+type PacienteFormInputs = z.infer<typeof pacienteSchema>;
+
+interface PacienteFormProps {
+  initialData?: PacienteResponse | null;
+  onSubmit: (data: PacienteRequest) => Promise<void>; // <-- AGORA É UMA PROMISE
+  isLoading: boolean;
+  onCancel: () => void;
+}
+
+export function PacienteForm({ initialData, onSubmit, isLoading, onCancel }: PacienteFormProps) {
+  const { register, handleSubmit, setError, formState: { errors } } = useForm<PacienteFormInputs>({
     resolver: zodResolver(pacienteSchema),
-    defaultValues: initialData || {}
+    defaultValues: (initialData || {}) as PacienteFormInputs
   });
 
+  // WRAPPER DE INTERCEPTAÇÃO DE ERRO
+  const handleFormSubmit = async (data: PacienteFormInputs) => {
+    try {
+      await onSubmit(data);
+    } catch (error) {
+      // Injeta os erros do Spring Boot nos campos correspondentes do React Hook Form
+      applyFormErrors(error, setError);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[80vh] overflow-y-auto px-1">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 max-h-[80vh] overflow-y-auto px-1">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
-          <label className="text-xs font-bold uppercase text-gray-500">Nome</label>
-          <Input {...register('nome')} />
+          <label className="text-xs font-bold uppercase text-muted-foreground">Nome</label>
+          <Input {...register('nome')} className={errors.nome ? 'border-red-500 focus-visible:ring-red-500' : ''} />
           {errors.nome && <p className="text-red-500 text-xs">{String(errors.nome.message)}</p>}
         </div>
         <div className="space-y-1">
-          <label className="text-xs font-bold uppercase text-gray-500">Sobrenome</label>
-          <Input {...register('sobrenome')} />
+          <label className="text-xs font-bold uppercase text-muted-foreground">Sobrenome</label>
+          <Input {...register('sobrenome')} className={errors.sobrenome ? 'border-red-500 focus-visible:ring-red-500' : ''} />
           {errors.sobrenome && <p className="text-red-500 text-xs">{String(errors.sobrenome.message)}</p>}
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
-          <label className="text-xs font-bold uppercase text-gray-500">CPF / Documento</label>
-          <Input {...register('documento')} />
+          <label className="text-xs font-bold uppercase text-muted-foreground">CPF / Documento</label>
+          <Input {...register('documento')} className={errors.documento ? 'border-red-500 focus-visible:ring-red-500' : ''} />
           {errors.documento && <p className="text-red-500 text-xs">{String(errors.documento.message)}</p>}
         </div>
         <div className="space-y-1">
-          <label className="text-xs font-bold uppercase text-gray-500">Data de Nascimento</label>
-          <Input type="date" {...register('dataNascimento')} />
+          <label className="text-xs font-bold uppercase text-muted-foreground">Data de Nascimento</label>
+          <Input type="date" {...register('dataNascimento')} className={errors.dataNascimento ? 'border-red-500 focus-visible:ring-red-500' : ''} />
           {errors.dataNascimento && <p className="text-red-500 text-xs">{String(errors.dataNascimento.message)}</p>}
         </div>
       </div>
       
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
-          <label className="text-xs font-bold uppercase text-gray-500">Gênero</label>
+          <label className="text-xs font-bold uppercase text-muted-foreground">Gênero</label>
           <select 
             {...register('genero')} 
-            className="w-full h-8 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            className={`w-full h-8 rounded-lg border bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 ${errors.genero ? 'border-red-500 focus-visible:ring-red-500' : 'border-input'}`}
           >
             <option value="">Selecione</option>
             <option value="MASCULINO">Masculino</option>
@@ -65,13 +86,13 @@ export function PacienteForm({ initialData, onSubmit, isLoading, onCancel }: any
           {errors.genero && <p className="text-red-500 text-xs">{String(errors.genero.message)}</p>}
         </div>
         <div className="space-y-1">
-          <label className="text-xs font-bold uppercase text-gray-500">Telefone</label>
+          <label className="text-xs font-bold uppercase text-muted-foreground">Telefone</label>
           <Input {...register('telefone')} placeholder="(11) 99999-9999" />
         </div>
       </div>
 
       <div className="space-y-1">
-        <label className="text-xs font-bold uppercase text-gray-500">Convênio / Seguro Saúde</label>
+        <label className="text-xs font-bold uppercase text-muted-foreground">Convênio / Seguro Saúde</label>
         <Input {...register('seguroSaude')} placeholder="Ex: Unimed, Bradesco..." />
       </div>
 

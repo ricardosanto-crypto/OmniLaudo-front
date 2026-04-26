@@ -87,7 +87,7 @@ export function DataTable<T>({
               </TableRow>
             ) : (
               data.map((item, rowIndex) => {
-                const rowId = rowIdAccessor(item as any, rowIndex);
+                const rowId = rowIdAccessor(item, rowIndex);
                 const isExpanded = !!expandedRows[rowId];
                 return (
                   <React.Fragment key={rowId}>

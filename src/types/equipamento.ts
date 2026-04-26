@@ -1,4 +1,4 @@
-import { Page } from './unidade';
+import { Page } from './api';
 
 export interface EquipamentoRequest {
   nome: string;

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { useEquipamentos, useCreateEquipamento, useUpdateEquipamento, useDeleteEquipamento } from '../../hooks/useEquipamentos';
 import { DataTable, ColumnDef } from '../../components/ui/data-table';
-import { EquipamentoResponse } from '../../types/equipamento';
+import { EquipamentoResponse, EquipamentoRequest } from '../../types/equipamento';
 import { EquipamentoForm } from './EquipamentoForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../../components/ui/dialog';
 import { RoleGuard } from '../../components/auth/RoleGuard';
@@ -15,9 +15,9 @@ export function Equipamentos() {
   const [equipEmEdicao, setEquipEmEdicao] = useState<EquipamentoResponse | null>(null);
 
   const { data: pageEquip, isLoading, isError, error } = useEquipamentos(page, 10);
-  const { mutate: criar, isPending: isCreating } = useCreateEquipamento();
-  const { mutate: atualizar, isPending: isUpdating } = useUpdateEquipamento();
-  const { mutate: inativar } = useDeleteEquipamento();
+  const criar = useCreateEquipamento();
+  const atualizar = useUpdateEquipamento();
+  const inativar = useDeleteEquipamento();
 
   const handleEdit = (equip: EquipamentoResponse) => {
     setEquipEmEdicao({
@@ -29,7 +29,7 @@ export function Equipamentos() {
 
   const handleDelete = (id: string) => {
     if (window.confirm("Deseja realmente inativar este equipamento? Isso o removerá na lista de agendamentos e sua modalidade do PACS.")) {
-      inativar(id);
+      inativar.mutate(id);
     }
   };
 
@@ -123,14 +123,15 @@ export function Equipamentos() {
             </DialogHeader>
             <EquipamentoForm
               initialData={equipEmEdicao}
-              isLoading={isCreating || isUpdating}
+              isLoading={criar.isPending || atualizar.isPending}
               onCancel={() => setIsModalOpen(false)}
-              onSubmit={(data: any) => {
+              onSubmit={async (data: EquipamentoRequest) => {
                 if (equipEmEdicao) {
-                  atualizar({ id: equipEmEdicao.id, data }, { onSuccess: () => setIsModalOpen(false) });
+                  await atualizar.mutateAsync({ id: equipEmEdicao.id, data });
                 } else {
-                  criar(data, { onSuccess: () => setIsModalOpen(false) });
+                  await criar.mutateAsync(data);
                 }
+                setIsModalOpen(false);
               }}
             />
           </DialogContent>
