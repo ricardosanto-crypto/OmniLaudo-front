@@ -11,6 +11,7 @@ import { Loader2 } from 'lucide-react';
 
 // Imports EAGER (O que precisa carregar rápido, logo no começo)
 import { Login } from './pages/Login';
+import { EsqueciSenha } from './pages/EsqueciSenha';
 
 // Função utilitária para fazer o Lazy Load suportar Named Exports (export function Tela)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -72,17 +73,18 @@ export const AppWithAuthValidation = () => {
 
 function App() {
   const location = useLocation();
-  const isLoginPage = location.pathname === '/login';
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/esqueci-senha';
   const isWorkspace = location.pathname.startsWith('/workspace');
 
   return (
     <QueryClientProvider client={queryClient}>
-      {!isLoginPage && !isWorkspace && <PageHeader />}
+      {!isAuthPage && !isWorkspace && <PageHeader />}
       
       {/* O Suspense intercepta as telas Lazy e exibe o Fallback enquanto baixa o JS */}
       <Suspense fallback={<TelaLoadingFallback />}>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/esqueci-senha" element={<EsqueciSenha />} />
 
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Dashboard />} />
