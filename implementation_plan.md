@@ -240,6 +240,28 @@ public class Alerta {
 }
 ```
 
+### 3.5 Entidade `Modalidade` (Tipo de Equipamento) — Nova (Necessária)
+
+```java
+@Entity
+@Table(name = "modalidades")
+public class Modalidade {
+    @Id @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
+    
+    @Column(unique = true, nullable = false, length = 10)
+    private String sigla; // Ex: MR, CT, CR, DX, US, MG
+    
+    @Column(nullable = false)
+    private String nome;  // Ex: Ressonância Magnética
+    
+    private String corHex; // Para padronização visual dos badges no frontend
+    
+    private boolean ativo = true;
+}
+```
+*Motivação:* Eliminar o hardcode de siglas (RM, TC, US) no frontend (`EquipamentoForm.tsx`), permitindo que as unidades gerenciem, criem e alterem tipos de equipamentos de forma dinâmica através do painel de Configurações.
+
 ---
 
 ## 4. Gap — Componentes Globais Reutilizáveis (Spec Seção 9)
@@ -294,6 +316,7 @@ public class Alerta {
 - [ ] **Agendamento Cockpit**: Timeline visual por sala (tipo Gantt) — componente novo completo
 - [ ] **Cadastro Paciente**: Wizard 4 passos + detecção duplicatas + validação
 - [ ] **Configurações**: Sidebar + tabela com drawer lateral + sessões ativas
+- [ ] **Configurações - Modalidades**: CRUD de Tipos de Equipamentos (Modalidades), eliminando hardcode do frontend
 
 ---
 

@@ -1,30 +1,23 @@
 import { Link } from 'react-router-dom';
-import { Stethoscope, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { ThemeToggle } from '../ui/theme-toggle';
 import { useAuthStore } from '../../store/useAuthStore';
 import { MainNav } from './MainNav';
 import { MobileNav } from './MobileNav';
+import logoBranco from '../../assets/LogoFundoBranco.png';
+import logoPreto from '../../assets/LogoFundoPreto.png';
 
 export function PageHeader() {
   const { user, logout } = useAuthStore();
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background transition-all">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-[1600px] mx-auto px-6 md:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center space-x-3 group shrink-0">
-              <div className="bg-blue-600 p-2 rounded-xl transition-all duration-300">
-                <Stethoscope className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-base font-bold text-foreground tracking-tight leading-none">
-                  OmniLaudo AI
-                </h1>
-                <p className="text-[8px] uppercase font-bold text-blue-500 tracking-widest mt-0.5">
-                  RIS / PACS Intelligence
-                </p>
-              </div>
+            <Link to="/" className="flex items-center group shrink-0">
+              <img src={logoBranco} alt="OmniLaudo" className="h-8 dark:hidden object-contain" />
+              <img src={logoPreto} alt="OmniLaudo" className="h-8 hidden dark:block object-contain" />
             </Link>
 
             <div className="h-6 w-[1px] bg-border mx-1" />

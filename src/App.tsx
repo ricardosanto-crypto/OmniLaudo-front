@@ -5,6 +5,7 @@ import { Toaster } from './components/ui/sonner';
 import { queryClient } from './lib/queryClient';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 import { PageHeader } from './components/layout/PageHeader';
+import { PageWrapper } from './components/layout/PageWrapper';
 import { useAuthStore } from './store/useAuthStore';
 import { api } from './services/api';
 import { Loader2 } from 'lucide-react';
@@ -27,9 +28,11 @@ const Equipamentos = lazyLoad(() => import('./pages/Equipamentos'), 'Equipamento
 const Pacientes = lazyLoad(() => import('./pages/Pacientes'), 'Pacientes');
 const Agendamentos = lazyLoad(() => import('./pages/Agendamentos'), 'Agendamentos');
 const Configuracoes = lazyLoad(() => import('./pages/Configuracoes'), 'Configuracoes');
+const Modalidades = lazyLoad(() => import('./pages/Modalidades'), 'Modalidades');
 const WorklistTecnologo = lazyLoad(() => import('./pages/Tecnologo/Worklist'), 'WorklistTecnologo');
 const WorklistMedico = lazyLoad(() => import('./pages/Medico/Worklist'), 'WorklistMedico');
 const WorkspaceMedico = lazyLoad(() => import('./pages/Medico/Workspace'), 'WorkspaceMedico');
+import { SettingsLayout } from './components/layout/SettingsLayout';
 
 // Loading Skeleton genérico (usado na checagem de auth e no carregamento das rotas lazy)
 export const TelaLoadingFallback = () => (
@@ -93,10 +96,26 @@ function App() {
           </Route>
 
           <Route element={<ProtectedRoute allowedRoles={['SUPERADMIN', 'ADMIN']} />}>
-            <Route path="/unidades" element={<Unidades />} />
-            <Route path="/salas" element={<Salas />} />
-            <Route path="/equipamentos" element={<Equipamentos />} />
-            <Route path="/configuracoes" element={<Configuracoes />} />
+            <Route path="/configuracoes" element={<SettingsLayout />}>
+              <Route index element={<Navigate to="/configuracoes/unidades" replace />} />
+              <Route path="unidades" element={<Unidades />} />
+              <Route path="salas" element={<Salas />} />
+              <Route path="equipamentos" element={<Equipamentos />} />
+              <Route path="templates" element={<Configuracoes />} />
+              <Route path="modalidades" element={<Modalidades />} />
+              {/* Fallback para páginas não implementadas ainda (exibindo placeholder) */}
+              <Route path="*" element={
+                <PageWrapper title="Módulo em Desenvolvimento" breadcrumbs={[{ label: 'Configurações', to: '/configuracoes' }]}>
+                  <div className="flex flex-col items-center justify-center p-20 border-2 border-dashed border-border rounded-[2rem] text-muted-foreground bg-muted/5">
+                    <p className="text-sm font-black uppercase tracking-[0.2em]">Funcionalidade em Breve</p>
+                  </div>
+                </PageWrapper>
+              } />
+            </Route>
+            {/* Redirects para manter compatibilidade */}
+            <Route path="/unidades" element={<Navigate to="/configuracoes/unidades" replace />} />
+            <Route path="/salas" element={<Navigate to="/configuracoes/salas" replace />} />
+            <Route path="/equipamentos" element={<Navigate to="/configuracoes/equipamentos" replace />} />
           </Route>
 
           <Route element={<ProtectedRoute allowedRoles={['SUPERADMIN', 'TECNOLOGO', 'ADMIN', 'MEDICO']} />}>

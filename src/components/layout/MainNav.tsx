@@ -1,7 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  ChevronDown
+  LayoutDashboard,
+  Users,
+  CalendarDays,
+  Activity,
+  FileSignature,
+  Settings
 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { cn } from '../../lib/utils';
@@ -9,20 +14,22 @@ import { cn } from '../../lib/utils';
 interface NavItemProps {
   to: string;
   label: string;
+  icon: React.ElementType;
   isActive: boolean;
 }
 
-function NavItem({ to, label, isActive }: NavItemProps) {
+function NavItem({ to, label, icon: Icon, isActive }: NavItemProps) {
   return (
     <Link
       to={to}
       className={cn(
-        "relative flex items-center px-4 py-2 text-xs font-bold transition-all rounded-md tracking-tight uppercase",
+        "relative flex items-center gap-2 px-3 py-2 text-xs font-bold transition-all rounded-md tracking-tight uppercase",
         isActive 
           ? "bg-muted text-foreground shadow-sm" 
           : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
       )}
     >
+      <Icon className="h-4 w-4" />
       {label}
       {isActive && (
         <motion.div
@@ -49,22 +56,25 @@ export function MainNav() {
   if (!user) return null;
 
   return (
-    <nav className="hidden lg:flex items-center gap-2">
+    <nav className="hidden lg:flex items-center gap-1">
       <NavItem 
         to="/" 
         label="Dashboard" 
+        icon={LayoutDashboard}
         isActive={location.pathname === "/"} 
       />
       
       <NavItem 
         to="/pacientes" 
         label="Pacientes" 
+        icon={Users}
         isActive={location.pathname === "/pacientes"} 
       />
 
       <NavItem 
         to="/agendamentos" 
         label="Agenda" 
+        icon={CalendarDays}
         isActive={location.pathname === "/agendamentos"} 
       />
 
@@ -72,6 +82,7 @@ export function MainNav() {
         <NavItem 
           to="/worklist" 
           label="Execução" 
+          icon={Activity}
           isActive={location.pathname === "/worklist"} 
         />
       </RoleGuard>
@@ -80,30 +91,18 @@ export function MainNav() {
         <NavItem 
           to="/worklist-medico" 
           label="Laudos" 
+          icon={FileSignature}
           isActive={location.pathname === "/worklist-medico" || location.pathname.startsWith("/workspace")} 
         />
       </RoleGuard>
 
       <RoleGuard allowedRoles={['SUPERADMIN', 'ADMIN']}>
-        <div className="relative group">
-          <button className={cn(
-            "flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-tight transition-all rounded-md",
-            ["/unidades", "/salas", "/equipamentos", "/configuracoes"].includes(location.pathname)
-              ? "bg-muted text-foreground"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-          )}>
-            Configurações
-            <ChevronDown className="h-3 w-3 opacity-50" />
-          </button>
-          
-          <div className="absolute left-0 mt-1 w-48 bg-card border border-border rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 py-1">
-            <Link to="/unidades" className="block px-4 py-2 text-xs font-bold uppercase text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Unidades</Link>
-            <Link to="/salas" className="block px-4 py-2 text-xs font-bold uppercase text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Salas</Link>
-            <Link to="/equipamentos" className="block px-4 py-2 text-xs font-bold uppercase text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Equipamentos</Link>
-            <div className="h-px bg-border mx-2 my-1" />
-            <Link to="/configuracoes" className="block px-4 py-2 text-xs font-bold uppercase text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">Templates & Frases</Link>
-          </div>
-        </div>
+        <NavItem 
+          to="/configuracoes/unidades" 
+          label="Configurações" 
+          icon={Settings}
+          isActive={location.pathname.startsWith("/configuracoes")} 
+        />
       </RoleGuard>
     </nav>
   );
