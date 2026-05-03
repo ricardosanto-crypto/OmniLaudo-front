@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../services/api';
-import { ApiResponse } from '../types/api';
+import { ApiResponse, Page } from '../types/api';
 import { ProcedimentoRequest, ProcedimentoResponse } from '../types/procedimento';
+import { mapSpringPage } from '../lib/utils';
 import { toast } from 'sonner';
 
 export const PROCEDIMENTOS_QUERY_KEY = ['procedimentos'];
@@ -9,12 +10,15 @@ export const PROCEDIMENTOS_QUERY_KEY = ['procedimentos'];
 /**
  * Hook para listar todos os procedimentos disponíveis
  */
-export function useProcedimentos(page = 0, size = 100) {
+export function useProcedimentos(page = 0, size = 10) {
   return useQuery({
-    queryKey: [...PROCEDIMENTOS_QUERY_KEY, 'todos', page, size],
-    queryFn: async (): Promise<ProcedimentoResponse[]> => {
-      const response = await api.get<ApiResponse<ProcedimentoResponse[]>>('/procedimentos/todos');
-      return response.data.data || [];
+    queryKey: [...PROCEDIMENTOS_QUERY_KEY, 'paginado', page, size],
+    queryFn: async (): Promise<Page<ProcedimentoResponse>> => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response = await api.get<ApiResponse<any>>('/procedimentos', {
+        params: { page, size }
+      });
+      return mapSpringPage<ProcedimentoResponse>(response.data.data, size);
     },
   });
 }

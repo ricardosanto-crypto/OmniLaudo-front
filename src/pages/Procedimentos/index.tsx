@@ -19,15 +19,15 @@ import { Input } from '../../components/ui/input';
 import { cn } from '../../lib/utils';
 
 export function Procedimentos() {
-  const [page] = useState(0);
-  const size = 100;
+  const [page, setPage] = useState(0);
+  const size = 10;
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [procedimentoEmEdicao, setProcedimentoEmEdicao] = useState<ProcedimentoResponse | null>(null);
 
-  const { data: procedimentos, isLoading, isError, error } = useProcedimentos(page, size);
+  const { data: pageProcedimentos, isLoading, isError, error } = useProcedimentos(page, size);
   const { data: pageModalidades } = useModalidades(0, 100);
   const deleteProcedimento = useDeleteProcedimento();
   const criarProcedimento = useCreateProcedimento();
@@ -50,8 +50,8 @@ export function Procedimentos() {
   };
 
   const filteredData = useMemo(() => {
-    if (!procedimentos) return [];
-    return procedimentos.filter((p) => {
+    if (!pageProcedimentos?.content) return [];
+    return pageProcedimentos.content.filter((p) => {
       const matchesSearch =
         p.codigo.toLowerCase().includes(search.toLowerCase()) ||
         p.nome.toLowerCase().includes(search.toLowerCase()) ||
@@ -60,7 +60,7 @@ export function Procedimentos() {
         statusFilter === 'all' ? true : statusFilter === 'active' ? p.ativo : !p.ativo;
       return matchesSearch && matchesStatus;
     });
-  }, [procedimentos, search, statusFilter]);
+  }, [pageProcedimentos, search, statusFilter]);
 
   const columns: ColumnDef<ProcedimentoResponse>[] = [
     {
@@ -228,6 +228,8 @@ export function Procedimentos() {
             data={filteredData}
             isLoading={isLoading}
             emptyMessage="Nenhum procedimento encontrado. Clique em 'Novo Procedimento' para adicionar."
+            pageInfo={pageProcedimentos ? { number: pageProcedimentos.number, totalPages: pageProcedimentos.totalPages, totalElements: pageProcedimentos.totalElements } : undefined}
+            onPageChange={setPage}
           />
         </div>
 
