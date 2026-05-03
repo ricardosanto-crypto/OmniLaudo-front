@@ -25,7 +25,7 @@ const sections: SidebarSection[] = [
       { label: 'Modalidades', to: '/configuracoes/modalidades' },
       { label: 'Templates & Frases', to: '/configuracoes/templates' },
       { label: 'Convênios', to: '/configuracoes/convenios' },
-      { label: 'Tabelas (TUSS/CID-10)', to: '/configuracoes/tabelas' },
+      { label: 'Procedimentos (TUSS)', to: '/configuracoes/procedimentos' },
     ]
   },
   {

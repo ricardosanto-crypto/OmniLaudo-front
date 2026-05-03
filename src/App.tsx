@@ -29,6 +29,7 @@ const Pacientes = lazyLoad(() => import('./pages/Pacientes'), 'Pacientes');
 const Agendamentos = lazyLoad(() => import('./pages/Agendamentos'), 'Agendamentos');
 const Configuracoes = lazyLoad(() => import('./pages/Configuracoes'), 'Configuracoes');
 const Modalidades = lazyLoad(() => import('./pages/Modalidades'), 'Modalidades');
+const Procedimentos = lazyLoad(() => import('./pages/Procedimentos'), 'Procedimentos');
 const WorklistTecnologo = lazyLoad(() => import('./pages/Tecnologo/Worklist'), 'WorklistTecnologo');
 const WorklistMedico = lazyLoad(() => import('./pages/Medico/Worklist'), 'WorklistMedico');
 const WorkspaceMedico = lazyLoad(() => import('./pages/Medico/Workspace'), 'WorkspaceMedico');
@@ -103,6 +104,7 @@ function App() {
               <Route path="equipamentos" element={<Equipamentos />} />
               <Route path="templates" element={<Configuracoes />} />
               <Route path="modalidades" element={<Modalidades />} />
+              <Route path="procedimentos" element={<Procedimentos />} />
               {/* Fallback para páginas não implementadas ainda (exibindo placeholder) */}
               <Route path="*" element={
                 <PageWrapper title="Módulo em Desenvolvimento" breadcrumbs={[{ label: 'Configurações', to: '/configuracoes' }]}>

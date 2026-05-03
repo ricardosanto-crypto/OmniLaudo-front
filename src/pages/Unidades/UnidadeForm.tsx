@@ -1,14 +1,14 @@
 import { useForm, useWatch, Control } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import {
   MapPin,
   Phone,
   Fingerprint,
   CircleDot,
   Building2,
-  Map as MapIcon,
+
   ExternalLink,
   Share2,
   Search,

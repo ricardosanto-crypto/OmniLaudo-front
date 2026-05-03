@@ -4,15 +4,22 @@ export interface ProcedimentoRequest {
   codigo: string;
   nome: string;
   descricao?: string;
-  modalidade: string; // MRI, CT, RX, US, MG, DX
+  modalidadeId: string;
   duracaoEstimadaMinutos?: number;
   ativo?: boolean;
 }
 
-export interface ProcedimentoResponse extends ProcedimentoRequest {
+export interface ProcedimentoResponse {
   id: string;
-  ativo: boolean;
+  codigo: string;
+  nome: string;
+  descricao?: string;
+  modalidadeId: string;
+  modalidadeSigla: string;
   duracaoEstimadaMinutos: number;
+  ativo: boolean;
+  criadoEm?: string;
+  atualizadoEm?: string;
 }
 
 export type ProcedimentoPage = Page<ProcedimentoResponse>;

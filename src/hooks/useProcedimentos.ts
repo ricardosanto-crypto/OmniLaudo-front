@@ -1,82 +1,41 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../services/api';
 import { ApiResponse } from '../types/api';
-import { ProcedimentoResponse } from '../types/procedimento';
+import { ProcedimentoRequest, ProcedimentoResponse } from '../types/procedimento';
+import { toast } from 'sonner';
 
 export const PROCEDIMENTOS_QUERY_KEY = ['procedimentos'];
-
-// Dados mockados para modalidades enquanto o backend não retorna dados
-const PROCEDIMENTOS_MOCK: Record<string, ProcedimentoResponse[]> = {
-  MRI: [
-    { id: '1', codigo: '32010094', nome: 'Ressonância Magnética de Crânio', modalidade: 'MRI', ativo: true, duracaoEstimadaMinutos: 30 },
-    { id: '2', codigo: '32010108', nome: 'Ressonância Magnética de Coluna Cervical', modalidade: 'MRI', ativo: true, duracaoEstimadaMinutos: 35 },
-    { id: '3', codigo: '32010116', nome: 'Ressonância Magnética de Coluna Torácica', modalidade: 'MRI', ativo: true, duracaoEstimadaMinutos: 35 },
-  ],
-  CT: [
-    { id: '4', codigo: '32010213', nome: 'Tomografia Computadorizada de Crânio', modalidade: 'CT', ativo: true, duracaoEstimadaMinutos: 10 },
-    { id: '5', codigo: '32010221', nome: 'Tomografia Computadorizada de Tórax', modalidade: 'CT', ativo: true, duracaoEstimadaMinutos: 15 },
-  ],
-  US: [
-    { id: '6', codigo: '40010014', nome: 'Ultrassom de Abdômen Total', modalidade: 'US', ativo: true, duracaoEstimadaMinutos: 20 },
-    { id: '7', codigo: '40010022', nome: 'Ultrassom de Pelve', modalidade: 'US', ativo: true, duracaoEstimadaMinutos: 15 },
-    { id: '8', codigo: '40010030', nome: 'Ultrassom de Mama', modalidade: 'US', ativo: true, duracaoEstimadaMinutos: 25 },
-  ],
-  RX: [
-    { id: '9', codigo: '31010011', nome: 'Radiografia de Tórax', modalidade: 'RX', ativo: true, duracaoEstimadaMinutos: 5 },
-    { id: '10', codigo: '31010038', nome: 'Radiografia de Coluna Lombar', modalidade: 'RX', ativo: true, duracaoEstimadaMinutos: 10 },
-  ],
-  MG: [
-    { id: '11', codigo: '33010010', nome: 'Mamografia Bilateral', modalidade: 'MG', ativo: true, duracaoEstimadaMinutos: 15 },
-  ],
-  DX: [
-    { id: '12', codigo: '29010017', nome: 'Radiografia Digital', modalidade: 'DX', ativo: true, duracaoEstimadaMinutos: 5 },
-  ],
-};
 
 /**
  * Hook para listar todos os procedimentos disponíveis
  */
-export function useProcedimentos() {
+export function useProcedimentos(page = 0, size = 100) {
   return useQuery({
-    queryKey: [...PROCEDIMENTOS_QUERY_KEY, 'todos'],
+    queryKey: [...PROCEDIMENTOS_QUERY_KEY, 'todos', page, size],
     queryFn: async (): Promise<ProcedimentoResponse[]> => {
-      try {
-        const response = await api.get<ApiResponse<ProcedimentoResponse[]>>('/procedimentos/todos');
-        return response.data.data || [];
-      } catch (error) {
-        console.warn('Erro ao carregar procedimentos da API, usando dados mockados:', error);
-        return Object.values(PROCEDIMENTOS_MOCK).flat();
-      }
+      const response = await api.get<ApiResponse<ProcedimentoResponse[]>>('/procedimentos/todos');
+      return response.data.data || [];
     },
-    retry: 1,
   });
 }
 
 /**
  * Hook para buscar procedimentos filtrados por modalidade
- * @param modalidade - Modalidade desejada (MRI, CT, RX, US, MG, DX)
  */
 export function useProcedimentosByModalidade(modalidade?: string) {
   return useQuery({
     queryKey: [...PROCEDIMENTOS_QUERY_KEY, 'modalidade', modalidade],
     queryFn: async (): Promise<ProcedimentoResponse[]> => {
       if (!modalidade) return [];
-      try {
-        const response = await api.get<ApiResponse<ProcedimentoResponse[]>>(`/procedimentos/modalidade/${modalidade}`);
-        return response.data.data || [];
-      } catch (error) {
-        console.warn(`Erro ao carregar procedimentos da modalidade ${modalidade}, usando dados mockados:`, error);
-        return PROCEDIMENTOS_MOCK[modalidade] || [];
-      }
+      const response = await api.get<ApiResponse<ProcedimentoResponse[]>>(`/procedimentos/modalidade/${modalidade}`);
+      return response.data.data || [];
     },
     enabled: !!modalidade,
-    retry: 1,
   });
 }
 
 /**
  * Hook para buscar um procedimento específico por ID
- * @param id - ID do procedimento
  */
 export function useProcedimentoById(id?: string) {
   return useQuery({
@@ -84,16 +43,14 @@ export function useProcedimentoById(id?: string) {
     queryFn: async (): Promise<ProcedimentoResponse | null> => {
       if (!id) return null;
       const response = await api.get<ApiResponse<ProcedimentoResponse>>(`/procedimentos/${id}`);
-      return response.data.data;
+      return response.data.data || null;
     },
     enabled: !!id,
-    retry: 0,
   });
 }
 
 /**
  * Hook para buscar um procedimento específico por código TUSS
- * @param codigo - Código TUSS do procedimento
  */
 export function useProcedimentoByCodigo(codigo?: string) {
   return useQuery({
@@ -101,9 +58,74 @@ export function useProcedimentoByCodigo(codigo?: string) {
     queryFn: async (): Promise<ProcedimentoResponse | null> => {
       if (!codigo) return null;
       const response = await api.get<ApiResponse<ProcedimentoResponse>>(`/procedimentos/codigo/${codigo}`);
-      return response.data.data;
+      return response.data.data || null;
     },
     enabled: !!codigo,
-    retry: 0,
+  });
+}
+
+/**
+ * Hook para criar um novo procedimento
+ */
+export function useCreateProcedimento() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: ProcedimentoRequest) => {
+      const response = await api.post<ApiResponse<ProcedimentoResponse>>('/procedimentos', data);
+      return response.data;
+    },
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: PROCEDIMENTOS_QUERY_KEY });
+      toast.success(response.message || 'Procedimento criado com sucesso');
+    },
+    onError: (error: unknown) => {
+      const message = (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Erro ao criar procedimento';
+      toast.error(message);
+    },
+  });
+}
+
+/**
+ * Hook para atualizar um procedimento existente
+ */
+export function useUpdateProcedimento() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: ProcedimentoRequest }) => {
+      const response = await api.put<ApiResponse<ProcedimentoResponse>>(`/procedimentos/${id}`, data);
+      return response.data;
+    },
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: PROCEDIMENTOS_QUERY_KEY });
+      toast.success(response.message || 'Procedimento atualizado com sucesso');
+    },
+    onError: (error: unknown) => {
+      const message = (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Erro ao atualizar procedimento';
+      toast.error(message);
+    },
+  });
+}
+
+/**
+ * Hook para inativar/excluir um procedimento
+ */
+export function useDeleteProcedimento() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await api.delete<ApiResponse<void>>(`/procedimentos/${id}`);
+      return response.data;
+    },
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: PROCEDIMENTOS_QUERY_KEY });
+      toast.success(response.message || 'Procedimento inativado com sucesso');
+    },
+    onError: (error: unknown) => {
+      const message = (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Erro ao inativar procedimento';
+      toast.error(message);
+    },
   });
 }
